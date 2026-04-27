@@ -702,6 +702,38 @@ async function syncAll() {
 // ══════════════════════════════════
 // RENDER DNA PREVIEW
 // ══════════════════════════════════
+// ── Mapping cột theo template 4 cột KOC ──
+// Cột A (index 0) = thông tin KOC  → key: col_a hoặc bất kỳ key đầu tiên
+// Cột B (index 1) = trình độ       → key: col_b / trình độ / trinh do / level
+// Cột C (index 2) = lớp học        → key: col_c / lớp / lop / grade
+// Cột D (index 3) = content        → key: col_d / content / nội dung
+
+function getKOCCols(row) {
+  const keys = Object.keys(row);
+  // Match exact template column names first, then fallback to fuzzy, then positional
+  const findKey = (...names) => keys.find(k => names.some(n => k === n)) 
+    || keys.find(k => names.some(n => k.includes(n))) 
+    || null;
+  return {
+    // Cột A: thong_tin_koc
+    info: row['thong_tin_koc']
+      || row[findKey('thông tin koc','thong tin koc','thong_tin_koc','koc info','thông tin','thong tin','info')]
+      || row[keys[0]] || '',
+    // Cột B: trinh_do_tieng_anh  
+    level: row['trinh_do_tieng_anh']
+      || row[findKey('trinh_do_tieng_anh','trình độ tiếng anh','trinh do tieng anh','trình độ','trinh do','level')]
+      || row[keys[1]] || '',
+    // Cột C: lop_hoc
+    grade: row['lop_hoc']
+      || row[findKey('lop_hoc','lớp học','lop hoc','lớp','lop','grade','class')]
+      || row[keys[2]] || '',
+    // Cột D: content_hieu_qua
+    content: row['content_hieu_qua']
+      || row[findKey('content_hieu_qua','content hiệu quả','content hieu qua','content đã dùng','nội dung','content','bài','bai')]
+      || row[keys[3]] || row[keys[0]] || '',
+  };
+}
+
 function renderDNA(type, data) {
   const preview = document.getElementById(type + 'Preview');
   const countEl = document.getElementById(type + 'Count');
@@ -709,18 +741,32 @@ function renderDNA(type, data) {
   countEl.textContent = data.length + ' mẫu';
   countEl.className   = 'dna-count ' + (data.length > 0 ? type : 'zero');
 
-  // Find content column
-  const contentKey = Object.keys(data[0] || {}).find(k =>
-    k.includes('content') || k.includes('nội dung') || k.includes('bai') || k.includes('bài')
-  ) || Object.keys(data[0] || {})[0];
-
-  preview.innerHTML = data.slice(0, 6).map((row, i) => {
-    const snippet = (row[contentKey] || Object.values(row)[0] || '').slice(0, 80);
-    return `<div class="dna-row">
-      <span class="dna-row-num">${i+1}</span>
-      <span class="dna-row-text">${esc(snippet)}${snippet.length >= 80 ? '…' : ''}</span>
-    </div>`;
-  }).join('');
+  if (type === 'koc') {
+    // Show 4-col preview for KOC sheet
+    preview.innerHTML = data.slice(0, 6).map((row, i) => {
+      const c = getKOCCols(row);
+      const lvlColor = c.level.toUpperCase().includes('GI') ? '#1B7A5A' : '#C77C2D';
+      const snippet  = c.content.slice(0, 70);
+      return `<div class="dna-row">
+        <span class="dna-row-num">${i+1}</span>
+        <span style="flex-shrink:0;font-size:10px;font-weight:700;color:${lvlColor};width:52px">${c.level||'—'}</span>
+        <span style="flex-shrink:0;font-size:10px;color:var(--ink3);width:42px">${c.grade||'—'}</span>
+        <span class="dna-row-text">${esc(snippet)}${snippet.length >= 70 ? '…' : ''}</span>
+      </div>`;
+    }).join('');
+  } else {
+    // Viral: single content preview
+    const contentKey = Object.keys(data[0] || {}).find(k =>
+      k.includes('content') || k.includes('nội dung') || k.includes('bài') || k.includes('bai')
+    ) || Object.keys(data[0] || {})[0];
+    preview.innerHTML = data.slice(0, 6).map((row, i) => {
+      const snippet = (row[contentKey] || Object.values(row)[0] || '').slice(0, 80);
+      return `<div class="dna-row">
+        <span class="dna-row-num">${i+1}</span>
+        <span class="dna-row-text">${esc(snippet)}${snippet.length >= 80 ? '…' : ''}</span>
+      </div>`;
+    }).join('');
+  }
 }
 
 function updatePills() {
@@ -763,16 +809,11 @@ async function generate() {
       <div class="sk" style="width:70%;height:9px;margin-top:6px"></div>
     </div>`).join('')}</div>`;
 
-  // Build DNA blocks
-  const kocUsable   = kocData.filter(d => {
-    const v = Object.values(d).join(' '); return v.length > 30;
-  }).slice(0, 8);
+  // Build DNA blocks — đọc đúng 4 cột KOC template
+  const kocUsable = kocData.filter(d => Object.values(d).join(' ').length > 20).slice(0, 8);
+  const viralUsable = viralData.filter(d => Object.values(d).join(' ').length > 30).slice(0, 5);
 
-  const viralUsable = viralData.filter(d => {
-    const v = Object.values(d).join(' '); return v.length > 30;
-  }).slice(0, 5);
-
-  const findContent = (row) => {
+  const findViralContent = (row) => {
     const keys = Object.keys(row);
     const ck = keys.find(k => k.includes('content') || k.includes('nội dung') || k.includes('bài') || k.includes('bai'));
     return row[ck] || row[keys[0]] || '';
@@ -780,14 +821,18 @@ async function generate() {
 
   let dnaBlock = '';
   if (kocUsable.length > 0) {
-    dnaBlock += `\n\n═══ DNA #1 — ${kocUsable.length} BÀI KOC ĐĂNG THỰC TẾ (hiệu quả cao) ═══\n`;
-    dnaBlock += `Phân tích kỹ: cách mở đầu, cấu trúc cảm xúc, giọng điệu, chi tiết thật, cách kết thúc.\n`;
-    dnaBlock += kocUsable.map((r, i) => `\n[KOC-${i+1}]\n${findContent(r)}`).join('\n');
+    dnaBlock += `\n\n═══ DNA #1 — ${kocUsable.length} MẪU KOC THỰC TẾ (hiệu quả cao) ═══\n`;
+    dnaBlock += `Mỗi mẫu có 4 thông tin: [THÔNG TIN KOC] + [TRÌNH ĐỘ] + [LỚP] + [CONTENT ĐÃ DÙNG]\n`;
+    dnaBlock += `Học kỹ: cách mở đầu, cấu trúc cảm xúc, giọng điệu phù hợp lớp/trình độ, chi tiết thật, CTA.\n`;
+    dnaBlock += kocUsable.map((r, i) => {
+      const c = getKOCCols(r);
+      return `\n[KOC-${i+1} | Trình độ: ${c.level||'—'} | ${c.grade||'—'}]\nThông tin KOC: ${c.info}\nContent đã dùng:\n${c.content}`;
+    }).join('\n');
   }
   if (viralUsable.length > 0) {
     dnaBlock += `\n\n═══ DNA #2 — ${viralUsable.length} BÀI FACEBOOK VIRAL (tiếng Anh trẻ em) ═══\n`;
     dnaBlock += `Học: hook mở đầu viral, cấu trúc câu chuyện thu hút, yếu tố tạo share/comment.\n`;
-    dnaBlock += viralUsable.map((r, i) => `\n[VIRAL-${i+1}]\n${findContent(r)}`).join('\n');
+    dnaBlock += viralUsable.map((r, i) => `\n[VIRAL-${i+1}]\n${findViralContent(r)}`).join('\n');
   }
 
   const prompt = `Bạn là chuyên gia phân tích content và copywriter hàng đầu, chuyên viết Facebook viral cho phụ huynh Việt Nam về học tiếng Anh cho trẻ em.
@@ -898,17 +943,20 @@ async function regenOne(idx) {
     'Viral hook & Ngắn gọn: Câu đầu cực sốc/hài hước → kể súc tích → CTA mạnh. 110-140 từ.'
   ];
 
-  const kocUsable   = kocData.filter(d => Object.values(d).join(' ').length > 30).slice(0, 5);
+  const kocUsable   = kocData.filter(d => Object.values(d).join(' ').length > 20).slice(0, 5);
   const viralUsable = viralData.filter(d => Object.values(d).join(' ').length > 30).slice(0, 3);
-  const findContent = (row) => {
+  const findViralContent2 = (row) => {
     const keys = Object.keys(row);
     const ck = keys.find(k => k.includes('content') || k.includes('nội dung') || k.includes('bài'));
     return row[ck] || row[keys[0]] || '';
   };
 
   let dna = '';
-  if (kocUsable.length) dna += '\nDNA KOC:\n' + kocUsable.map((r,i) => `[${i+1}] ${findContent(r)}`).join('\n');
-  if (viralUsable.length) dna += '\nDNA Viral:\n' + viralUsable.map((r,i) => `[${i+1}] ${findContent(r)}`).join('\n');
+  if (kocUsable.length) dna += '\nDNA KOC:\n' + kocUsable.map((r,i) => {
+    const c = getKOCCols(r);
+    return `[${i+1}|${c.level||''}|${c.grade||''}] ${c.content}`;
+  }).join('\n');
+  if (viralUsable.length) dna += '\nDNA Viral:\n' + viralUsable.map((r,i) => `[${i+1}] ${findViralContent2(r)}`).join('\n');
 
   const p = `Viết LẠI 1 bài Facebook review Edupia.
 Phong cách: ${styles[idx]}
