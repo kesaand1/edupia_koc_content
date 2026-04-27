@@ -100,24 +100,39 @@ JSON hợp lệ, không markdown, không backtick:
       }),
     });
 
-    const claudeData = await claudeRes.json();
-    const raw        = (claudeData.content || []).map(b => b.text || '').join('');
+    // Log Claude response status for debugging
+    if (!claudeRes.ok) {
+      const errText = await claudeRes.text();
+      throw new Error('Claude API lỗi ' + claudeRes.status + ': ' + errText.slice(0, 300));
+    }
 
-    // Robust JSON extraction — handles truncated or wrapped responses
+    const claudeData = await claudeRes.json();
+
+    // Check for API-level errors
+    if (claudeData.error) {
+      throw new Error('Claude error: ' + claudeData.error.message);
+    }
+
+    const raw = (claudeData.content || []).map(b => b.text || '').join('');
+
+    if (!raw) {
+      throw new Error('Claude trả về rỗng. Stop reason: ' + claudeData.stop_reason + ' | Usage: ' + JSON.stringify(claudeData.usage));
+    }
+
+    // Robust JSON extraction
     let parsed;
     try {
       parsed = JSON.parse(raw.replace(/```json|```/g, '').trim());
     } catch(parseErr) {
-      // Try to extract JSON object from partial response
       const match = raw.match(/\{[\s\S]*"versions"[\s\S]*\}/);
       if (match) {
-        try { parsed = JSON.parse(match[0]); } catch(e2) { throw new Error('JSON parse thất bại: ' + raw.slice(0, 200)); }
+        try { parsed = JSON.parse(match[0]); } catch(e2) { throw new Error('JSON parse thất bại: ' + raw.slice(0, 300)); }
       } else {
-        throw new Error('Claude trả về không đúng format JSON. Raw: ' + raw.slice(0, 200));
+        throw new Error('Format JSON sai. Raw response: ' + raw.slice(0, 300));
       }
     }
 
-    if (!parsed?.versions?.length) throw new Error('Không có versions trong response');
+    if (!parsed?.versions?.length) throw new Error('Thiếu versions. Parsed: ' + JSON.stringify(parsed).slice(0, 200));
 
     return res.status(200).json({
       versions:    parsed.versions,
