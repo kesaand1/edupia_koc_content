@@ -58,6 +58,21 @@ body{font-family:'DM Sans',sans-serif;background:#EEECEA;color:var(--ink);min-he
 .db-input-ico{width:20px;height:20px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0}
 .ico-koc{background:var(--sage3)}
 .ico-viral{background:var(--amberl)}
+.ico-return{background:#EEF2FF}
+
+/* ── MODE TOGGLE ── */
+.mode-toggle{display:flex;gap:8px;margin-bottom:14px}
+.mode-btn{flex:1;padding:9px 12px;border-radius:var(--rs);border:1.5px solid var(--rule2);background:var(--white);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;color:var(--ink3);text-align:center;transition:all .18s;line-height:1.4}
+.mode-btn:hover{border-color:var(--sage);color:var(--sage)}
+.mode-btn.active{border-color:var(--sage);background:var(--sage3);color:var(--sage);font-weight:700}
+.mode-btn .mode-ico{font-size:16px;display:block;margin-bottom:3px}
+.mode-btn .mode-lbl{display:block;font-size:12px}
+.mode-btn .mode-sub{display:block;font-size:10px;color:var(--ink3);margin-top:1px;font-weight:400}
+.mode-btn.active .mode-sub{color:var(--sage4)}
+
+/* Return DNA status */
+.return-dna-box{background:#EEF2FF;border:1px solid #C7D2FE;border-radius:var(--rs);padding:8px 11px;font-size:12px;color:#3730A3;margin-bottom:12px;display:none;line-height:1.6}
+.return-dna-box.show{display:block}
 .sheet-row{display:flex;gap:6px}
 .sheet-inp{flex:1;padding:7px 10px;font-size:12.5px;font-family:'DM Sans',sans-serif;border:1px solid var(--rule2);border-radius:var(--rs);background:#F7F6F3;color:var(--ink);outline:none;transition:border-color .15s,box-shadow .15s}
 .sheet-inp:focus{border-color:var(--sage);box-shadow:0 0 0 3px rgba(27,122,90,.09);background:var(--white)}
@@ -201,27 +216,31 @@ body{font-family:'DM Sans',sans-serif;background:#EEECEA;color:var(--ink);min-he
     <div class="db-card">
 
       <!-- Stats -->
-      <div class="db-status-bar">
+      <div class="db-status-bar" style="grid-template-columns:1fr 1fr 1fr 1fr">
         <div class="db-stat">
           <div class="db-stat-num green" id="statKoc">—</div>
-          <div class="db-stat-label">Mẫu KOC đã học</div>
+          <div class="db-stat-label">KOC lần đầu</div>
         </div>
         <div class="db-stat">
           <div class="db-stat-num amber" id="statViral">—</div>
-          <div class="db-stat-label">Bài Viral đã học</div>
+          <div class="db-stat-label">Bài Viral</div>
+        </div>
+        <div class="db-stat">
+          <div class="db-stat-num" id="statReturn" style="color:#4F46E5">—</div>
+          <div class="db-stat-label">KOC lần 2+</div>
         </div>
         <div class="db-stat">
           <div class="db-stat-num" id="statTotal" style="color:var(--ink3)">—</div>
-          <div class="db-stat-label">Tổng vectors trong DB</div>
+          <div class="db-stat-label">Tổng vectors</div>
         </div>
       </div>
 
       <!-- Sheet URLs -->
-      <div class="db-inputs">
+      <div class="db-inputs" style="grid-template-columns:1fr 1fr 1fr">
         <div class="db-input-block">
           <div class="db-input-label">
             <div class="db-input-ico ico-koc">✍️</div>
-            KOC Content Win — Google Sheet
+            KOC Content Win — Lần đầu
           </div>
           <div class="sheet-row">
             <input class="sheet-inp" id="kocUrl" type="text" placeholder="https://docs.google.com/spreadsheets/d/...">
@@ -231,11 +250,21 @@ body{font-family:'DM Sans',sans-serif;background:#EEECEA;color:var(--ink);min-he
         <div class="db-input-block">
           <div class="db-input-label">
             <div class="db-input-ico ico-viral">🔥</div>
-            Facebook Viral — Google Sheet
+            Facebook Viral
           </div>
           <div class="sheet-row">
             <input class="sheet-inp" id="viralUrl" type="text" placeholder="https://docs.google.com/spreadsheets/d/...">
             <button class="save-btn" onclick="saveUrl('viral')">Lưu</button>
+          </div>
+        </div>
+        <div class="db-input-block" style="border-right:none">
+          <div class="db-input-label">
+            <div class="db-input-ico ico-return">🔄</div>
+            KOC Content Win — Lần 2+
+          </div>
+          <div class="sheet-row">
+            <input class="sheet-inp" id="returnUrl" type="text" placeholder="https://docs.google.com/spreadsheets/d/...">
+            <button class="save-btn" onclick="saveUrl('return')">Lưu</button>
           </div>
         </div>
       </div>
@@ -276,6 +305,24 @@ body{font-family:'DM Sans',sans-serif;background:#EEECEA;color:var(--ink);min-he
           <span id="dnaStatusTxt">Chưa có dữ liệu trong DB — hãy đồng bộ trước</span>
         </div>
 
+        <label class="flbl">Đây là lần hợp tác thứ mấy với KOC này?</label>
+        <div class="mode-toggle">
+          <button class="mode-btn active" id="modeBtn1" onclick="setMode('first')">
+            <span class="mode-ico">🌱</span>
+            <span class="mode-lbl">Lần đầu tiên</span>
+            <span class="mode-sub">Dùng DNA KOC + Viral</span>
+          </button>
+          <button class="mode-btn" id="modeBtn2" onclick="setMode('return')">
+            <span class="mode-ico">🔄</span>
+            <span class="mode-lbl">Lần 2 trở lên</span>
+            <span class="mode-sub">Dùng DNA lần 2 đã học</span>
+          </button>
+        </div>
+
+        <div class="return-dna-box" id="returnDnaBox">
+          <strong>Chế độ KOC quay lại:</strong> AI sẽ ưu tiên học từ kho content lần 2 của bạn, kết hợp với DNA lần đầu để viết bài phù hợp với KOC đã có kinh nghiệm.
+        </div>
+
         <label class="flbl">Thông tin tóm tắt về KOC và con</label>
         <textarea class="koc-area" id="kocInfo"
           placeholder="Viết tự do những gì bạn biết về KOC...
@@ -299,6 +346,9 @@ Ví dụ:
           <div class="spin" id="spinner"></div>
           <span id="genLbl">✦ Tạo 2 phiên bản content</span>
         </button>
+        <div id="modeIndicator" style="text-align:center;font-size:11px;color:var(--ink3);margin-top:6px">
+          Chế độ: <strong id="modeIndicatorTxt" style="color:var(--sage)">Lần đầu tiên</strong>
+        </div>
 
       </div>
     </div>
@@ -328,12 +378,15 @@ Ví dụ:
 
 <script>
 // ══ INIT ══
+let currentMode = 'first'; // 'first' | 'return'
+
 window.addEventListener('DOMContentLoaded', () => {
-  // Restore saved URLs
   const ku = localStorage.getItem('kocSheetUrl');
   const vu = localStorage.getItem('viralSheetUrl');
-  if (ku) document.getElementById('kocUrl').value   = ku;
-  if (vu) document.getElementById('viralUrl').value = vu;
+  const ru = localStorage.getItem('returnSheetUrl');
+  if (ku) document.getElementById('kocUrl').value    = ku;
+  if (vu) document.getElementById('viralUrl').value  = vu;
+  if (ru) document.getElementById('returnUrl').value = ru;
 
   const ls = localStorage.getItem('lastSync');
   if (ls) document.getElementById('lastSyncTime').textContent = 'Lần cuối học: ' + ls;
@@ -341,14 +394,28 @@ window.addEventListener('DOMContentLoaded', () => {
   checkStats();
 });
 
+// ══ MODE TOGGLE ══
+function setMode(mode) {
+  currentMode = mode;
+  document.getElementById('modeBtn1').classList.toggle('active', mode === 'first');
+  document.getElementById('modeBtn2').classList.toggle('active', mode === 'return');
+  const returnBox = document.getElementById('returnDnaBox');
+  returnBox.classList.toggle('show', mode === 'return');
+  document.getElementById('modeIndicatorTxt').textContent =
+    mode === 'first' ? 'Lần đầu tiên' : 'Lần 2 trở lên';
+  document.getElementById('modeIndicatorTxt').style.color =
+    mode === 'first' ? 'var(--sage)' : '#4F46E5';
+}
+
 // ══ SAVE URL ══
 function saveUrl(type) {
-  const id  = type === 'koc' ? 'kocUrl' : 'viralUrl';
-  const key = type === 'koc' ? 'kocSheetUrl' : 'viralSheetUrl';
-  const val = document.getElementById(id).value.trim();
+  const idMap  = { koc: 'kocUrl', viral: 'viralUrl', return: 'returnUrl' };
+  const keyMap = { koc: 'kocSheetUrl', viral: 'viralSheetUrl', return: 'returnSheetUrl' };
+  const lblMap = { koc: 'KOC lần đầu', viral: 'Viral', return: 'KOC lần 2+' };
+  const val = document.getElementById(idMap[type]).value.trim();
   if (!val) { toast('Nhập link trước!'); return; }
-  localStorage.setItem(key, val);
-  toast('✓ Đã lưu link ' + (type === 'koc' ? 'KOC' : 'Viral'));
+  localStorage.setItem(keyMap[type], val);
+  toast('✓ Đã lưu link ' + lblMap[type]);
 }
 
 // ══ CHECK STATS ══
@@ -371,15 +438,18 @@ async function checkStats() {
 }
 
 function updateStats(json) {
-  document.getElementById('statKoc').textContent   = json.koc   || 0;
-  document.getElementById('statViral').textContent = json.viral || 0;
-  document.getElementById('statTotal').textContent = json.total || 0;
+  document.getElementById('statKoc').textContent    = json.koc    || 0;
+  document.getElementById('statViral').textContent  = json.viral  || 0;
+  document.getElementById('statReturn').textContent = json.return || 0;
+  document.getElementById('statTotal').textContent  = json.total  || 0;
 }
 
 function setDNAReady(koc, viral) {
+  const ret = parseInt(document.getElementById('statReturn').textContent) || 0;
   const box = document.getElementById('dnaStatusBox');
   box.className = 'dna-status ready';
-  document.getElementById('dnaStatusTxt').textContent = `✓ DB sẵn sàng — ${koc} mẫu KOC + ${viral} bài viral đã học`;
+  document.getElementById('dnaStatusTxt').textContent =
+    `✓ DB sẵn sàng — ${koc} KOC lần đầu · ${viral} viral · ${ret} KOC lần 2+`;
 }
 
 function setDNAEmpty() {
@@ -390,10 +460,11 @@ function setDNAEmpty() {
 
 // ══ SYNC & LEARN ══
 async function syncAndLearn() {
-  const kocUrl   = localStorage.getItem('kocSheetUrl')   || document.getElementById('kocUrl').value.trim();
-  const viralUrl = localStorage.getItem('viralSheetUrl') || document.getElementById('viralUrl').value.trim();
+  const kocUrl    = localStorage.getItem('kocSheetUrl')    || document.getElementById('kocUrl').value.trim();
+  const viralUrl  = localStorage.getItem('viralSheetUrl')  || document.getElementById('viralUrl').value.trim();
+  const returnUrl = localStorage.getItem('returnSheetUrl') || document.getElementById('returnUrl').value.trim();
 
-  if (!kocUrl && !viralUrl) {
+  if (!kocUrl && !viralUrl && !returnUrl) {
     toast('⚠ Nhập ít nhất 1 link Google Sheet trước!'); return;
   }
 
@@ -482,7 +553,7 @@ async function generate() {
     const res  = await fetch('/api/generate', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ kocInfo, link }),
+      body:    JSON.stringify({ kocInfo, link, mode: currentMode }),
     });
     const json = await res.json();
     if (!res.ok || json.error) throw new Error(json.error || 'Lỗi generate');
@@ -511,9 +582,14 @@ const chatHistories = [{}, {}];
 function renderCards(versions, dnaUsed, topScore) {
   const matchPct = Math.round((topScore || 0) * 100);
   const badgeClass = matchPct >= 70 ? 'dna-badge' : 'dna-badge low';
-  const badgeTxt = dnaUsed?.koc > 0
-    ? `🧬 Học từ ${dnaUsed.koc} mẫu KOC + ${dnaUsed.viral||0} viral · Độ khớp cao nhất: ${matchPct}%`
-    : '🧬 Viết dựa trên kiến thức chung (chưa có dữ liệu DNA)';
+  let badgeTxt;
+  if (dnaUsed?.return > 0) {
+    badgeTxt = `🔄 Lần 2+: học từ ${dnaUsed.return} mẫu lần 2 · ${dnaUsed.koc||0} lần đầu · ${dnaUsed.viral||0} viral · Khớp: ${matchPct}%`;
+  } else if (dnaUsed?.koc > 0) {
+    badgeTxt = `🧬 Lần đầu: học từ ${dnaUsed.koc} mẫu KOC + ${dnaUsed.viral||0} viral · Khớp: ${matchPct}%`;
+  } else {
+    badgeTxt = '🧬 Viết dựa trên kiến thức chung (chưa có dữ liệu DNA)';
+  }
 
   // Reset chat history on new generation
   chatHistories[0] = []; chatHistories[1] = [];
