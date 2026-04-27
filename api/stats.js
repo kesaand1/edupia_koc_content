@@ -21,10 +21,11 @@ export default async function handler(req, res) {
     const json = await r.json();
     const ns   = json.namespaces || {};
     return res.status(200).json({
-      koc:   ns.koc?.vectorCount   || 0,
-      viral: ns.viral?.vectorCount || 0,
-      total: json.totalVectorCount || 0,
-      ready: (json.totalVectorCount || 0) > 0,
+      koc:    ns.koc?.vectorCount    || 0,
+      viral:  ns.viral?.vectorCount  || 0,
+      return: ns.return?.vectorCount || 0,
+      total:  json.totalVectorCount  || 0,
+      ready:  (json.totalVectorCount || 0) > 0,
     });
   } catch (e) {
     return res.status(200).json({ koc: 0, viral: 0, ready: false, error: e.message });
