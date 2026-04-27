@@ -610,30 +610,41 @@ function setSt(state, txt) {
 // ══════════════════════════════════
 // PARSE CSV
 // ══════════════════════════════════
+// Parse CSV đúng chuẩn RFC 4180 — xử lý ô có nhiều dòng (multiline cells)
 function parseCSV(text) {
-  const lines = text.trim().split('\n');
-  if (lines.length < 2) return [];
-  const headers = parseCSVRow(lines[0]).map(h => h.toLowerCase().trim());
-  return lines.slice(1)
-    .map(line => {
-      const cols = parseCSVRow(line);
-      const obj  = {};
+  const rows = parseCSVFull(text);
+  if (rows.length < 2) return [];
+  const headers = rows[0].map(h => h.toLowerCase().trim());
+  return rows.slice(1)
+    .map(cols => {
+      const obj = {};
       headers.forEach((h, i) => { obj[h] = (cols[i] || '').trim(); });
       return obj;
     })
     .filter(row => Object.values(row).some(v => v));
 }
 
-function parseCSVRow(line) {
-  const cols = []; let cur = '', inQ = false;
-  for (let i = 0; i < line.length; i++) {
-    const c = line[i];
-    if (c === '"') { inQ = !inQ; }
-    else if (c === ',' && !inQ) { cols.push(cur); cur = ''; }
-    else cur += c;
+function parseCSVFull(text) {
+  // RFC 4180 compliant parser — handles \n inside quoted cells
+  const rows = [];
+  let row = [], cur = '', inQ = false, i = 0;
+  while (i < text.length) {
+    const c  = text[i];
+    const nc = text[i + 1];
+    if (inQ) {
+      if (c === '"' && nc === '"') { cur += '"'; i += 2; continue; } // escaped quote
+      if (c === '"') { inQ = false; i++; continue; }                 // end quote
+      cur += c; i++; // any char inside quotes (including \n, \r)
+    } else {
+      if (c === '"') { inQ = true; i++; continue; }                  // start quote
+      if (c === ',') { row.push(cur); cur = ''; i++; continue; }     // col sep
+      if (c === '\r' && nc === '\n') { row.push(cur); rows.push(row); row = []; cur = ''; i += 2; continue; }
+      if (c === '\n' || c === '\r')  { row.push(cur); rows.push(row); row = []; cur = ''; i++; continue; }
+      cur += c; i++;
+    }
   }
-  cols.push(cur);
-  return cols;
+  if (cur || row.length) { row.push(cur); rows.push(row); }
+  return rows.filter(r => r.some(c => c.trim())); // drop empty rows
 }
 
 // ══════════════════════════════════
