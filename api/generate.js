@@ -18,8 +18,49 @@ export default async function handler(req, res) {
   try { body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body; }
   catch { return res.status(400).json({ error: 'Invalid JSON body' }); }
 
-  const { kocInfo, link } = body;
+  const { kocInfo, link, editRequest } = body;
   if (!kocInfo || !link) return res.status(400).json({ error: 'Thiếu kocInfo hoặc link' });
+
+  // ── Chế độ sửa bài theo góp ý chat ──
+  if (editRequest) {
+    const { currentContent, feedback, history } = editRequest;
+    const historyTxt = (history || [])
+      .map(m => (m.role === 'user' ? 'Người dùng: ' : 'AI: ') + m.text)
+      .join('\n');
+
+    const editPrompt = `Bạn là copywriter chuyên viết Facebook content cho phụ huynh Việt Nam về học tiếng Anh với Edupia.
+
+BÀI VIẾT HIỆN TẠI:
+${currentContent}
+
+THÔNG TIN KOC:
+${kocInfo}
+
+LỊCH SỬ GÓP Ý:
+${historyTxt || 'Chưa có'}
+
+GÓP Ý MỚI NHẤT CỦA NGƯỜI DÙNG:
+${feedback}
+
+NHIỆM VỤ: Sửa lại bài viết theo đúng góp ý. Giữ nguyên những gì tốt, chỉ thay đổi theo yêu cầu.
+Quy tắc: Chỉ nhắc "Edupia" 1 lần. Không đề cập lớp/tuổi. Giọng phụ huynh VN. Link: ${link}
+
+Trả về JSON: {"versions":[{"label":"Đã chỉnh theo góp ý","content":"..."},{"label":"Phiên bản thay thế","content":"..."}]}`;
+
+    const editRes = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'x-api-key': ANTHROPIC_KEY, 'anthropic-version': '2023-06-01', 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 2000, messages: [{ role: 'user', content: editPrompt }] }),
+    });
+    const editData = await editRes.json();
+    if (!editRes.ok || editData.error) throw new Error(editData.error?.message || 'Claude edit error');
+    const raw = (editData.content || []).map(b => b.text || '').join('');
+    let parsed;
+    try { parsed = JSON.parse(raw.replace(/\`\`\`json|\`\`\`/g, '').trim()); }
+    catch(e) { const m = raw.match(/\{[\s\S]*"versions"[\s\S]*\}/); parsed = m ? JSON.parse(m[0]) : null; }
+    if (!parsed?.versions) throw new Error('Không parse được response');
+    return res.status(200).json({ versions: parsed.versions, dnaUsed: { koc: 0, viral: 0 }, topKocScore: 0 });
+  }
 
   try {
     // ── 1. Tạo embedding từ thông tin KOC ──
