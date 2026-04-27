@@ -66,27 +66,50 @@ Trả về JSON: {"versions":[{"label":"Đã chỉnh theo góp ý","content":"..
     // ── 1. Tạo embedding từ thông tin KOC ──
     const queryVec = pseudoEmbedding(kocInfo);
 
-    // ── 2. Query Pinecone — lấy 5 mẫu KOC + 3 bài viral phù hợp nhất ──
-    const [kocMatches, viralMatches] = await Promise.all([
-      queryPinecone(queryVec, 'koc',   5, PINECONE_KEY, PINECONE_HOST),
-      queryPinecone(queryVec, 'viral', 3, PINECONE_KEY, PINECONE_HOST),
-    ]);
+    const mode = body.mode || 'first'; // 'first' | 'return'
+
+    // ── 2. Query Pinecone theo mode ──
+    let kocMatches = [], viralMatches = [], returnMatches = [];
+
+    if (mode === 'return') {
+      // Lần 2+: ưu tiên DNA lần 2, bổ sung thêm DNA lần đầu
+      [returnMatches, kocMatches, viralMatches] = await Promise.all([
+        queryPinecone(queryVec, 'return', 5, PINECONE_KEY, PINECONE_HOST),
+        queryPinecone(queryVec, 'koc',    3, PINECONE_KEY, PINECONE_HOST),
+        queryPinecone(queryVec, 'viral',  2, PINECONE_KEY, PINECONE_HOST),
+      ]);
+    } else {
+      // Lần đầu: DNA KOC + Viral
+      [kocMatches, viralMatches] = await Promise.all([
+        queryPinecone(queryVec, 'koc',   5, PINECONE_KEY, PINECONE_HOST),
+        queryPinecone(queryVec, 'viral', 3, PINECONE_KEY, PINECONE_HOST),
+      ]);
+    }
 
     // ── 3. Build DNA block ──
     let dnaBlock = '';
 
+    if (mode === 'return' && returnMatches.length > 0) {
+      dnaBlock += `\n\n═══ DNA ƯU TIÊN — ${returnMatches.length} MẪU CONTENT KOC LẦN 2+ ═══\n`;
+      dnaBlock += `Đây là content của những KOC đã hợp tác lần 2+. Học kỹ phong cách, cách đề cập kết quả dài hạn, sự tin tưởng đã được xây dựng.\n`;
+      dnaBlock += returnMatches.map((m, i) => {
+        const md = m.metadata;
+        return `\n[LẦN2-${i+1} | Score: ${(m.score*100).toFixed(0)}% | ${md.level||''} | ${md.grade||''}]\nThông tin KOC: ${md.info||md.content?.slice(0,200)}\nContent:\n${md.content}`;
+      }).join('\n');
+    }
+
     if (kocMatches.length > 0) {
-      dnaBlock += `\n\n═══ DNA #1 — ${kocMatches.length} MẪU KOC PHÙ HỢP NHẤT (tìm từ vector DB) ═══\n`;
-      dnaBlock += `Học kỹ: cách mở đầu, cấu trúc cảm xúc, giọng điệu, chi tiết thật, CTA.\n`;
+      dnaBlock += `\n\n═══ DNA ${mode === 'return' ? 'BỔ SUNG' : 'CHÍNH'} — ${kocMatches.length} MẪU KOC LẦN ĐẦU ═══\n`;
+      dnaBlock += `Học: cách mở đầu, cấu trúc cảm xúc, giọng điệu, chi tiết thật, CTA.\n`;
       dnaBlock += kocMatches.map((m, i) => {
         const md = m.metadata;
-        return `\n[KOC-${i+1} | Score: ${(m.score*100).toFixed(0)}% | Trình độ: ${md.level||'—'} | ${md.grade||'—'}]\nThông tin KOC: ${md.info}\nContent đã dùng:\n${md.content}`;
+        return `\n[KOC-${i+1} | Score: ${(m.score*100).toFixed(0)}% | ${md.level||'—'} | ${md.grade||'—'}]\nThông tin KOC: ${md.info}\nContent:\n${md.content}`;
       }).join('\n');
     }
 
     if (viralMatches.length > 0) {
-      dnaBlock += `\n\n═══ DNA #2 — ${viralMatches.length} BÀI FACEBOOK VIRAL PHÙ HỢP ═══\n`;
-      dnaBlock += `Học: hook mở đầu, cấu trúc câu chuyện thu hút, yếu tố tạo share.\n`;
+      dnaBlock += `\n\n═══ DNA VIRAL — ${viralMatches.length} BÀI FACEBOOK PHÙ HỢP ═══\n`;
+      dnaBlock += `Học: hook mở đầu, cấu trúc thu hút, yếu tố tạo share.\n`;
       dnaBlock += viralMatches.map((m, i) => `\n[VIRAL-${i+1} | Score: ${(m.score*100).toFixed(0)}%]\n${m.metadata.content}`).join('\n');
     }
 
@@ -177,8 +200,9 @@ JSON hợp lệ, không markdown, không backtick:
 
     return res.status(200).json({
       versions:    parsed.versions,
-      dnaUsed:     { koc: kocMatches.length, viral: viralMatches.length },
-      topKocScore: kocMatches[0]?.score || 0,
+      dnaUsed:     { koc: kocMatches.length, viral: viralMatches.length, return: returnMatches.length },
+      topKocScore: returnMatches[0]?.score || kocMatches[0]?.score || 0,
+      mode,
     });
 
   } catch (e) {
