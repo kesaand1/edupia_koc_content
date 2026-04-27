@@ -481,6 +481,7 @@ body {
               value="">
             <button class="sheet-load-btn" onclick="loadKOC()">Tải</button>
           </div>
+          <div id="kocMsg" style="display:none"></div>
           <div class="dna-preview" id="kocPreview">
             <div class="dna-empty-msg">Nhập link Google Sheet và nhấn Tải</div>
           </div>
@@ -506,6 +507,7 @@ body {
               value="">
             <button class="sheet-load-btn" onclick="loadViral()">Tải</button>
           </div>
+          <div id="viralMsg" style="display:none"></div>
           <div class="dna-preview" id="viralPreview">
             <div class="dna-empty-msg">Nhập link Google Sheet và nhấn Tải</div>
           </div>
@@ -646,45 +648,57 @@ function toCSVUrl(raw) {
   return `https://docs.google.com/spreadsheets/d/${id}/export?format=csv&gid=${gid}`;
 }
 
-async function loadKOC() {
-  const raw = document.getElementById('kocUrl').value.trim();
-  if (!raw) { toast('Nhập link Google Sheet KOC trước!'); return; }
-  const btn = document.querySelector('#kocUrl').parentElement.querySelector('.sheet-load-btn');
-  btn.disabled = true; btn.textContent = '...';
+async function loadSheet(type) {
+  const inputId = type === 'koc' ? 'kocUrl' : 'viralUrl';
+  const msgId   = type === 'koc' ? 'kocMsg' : 'viralMsg';
+  const raw     = document.getElementById(inputId).value.trim();
+  const btn     = document.querySelector('#' + inputId).parentElement.querySelector('.sheet-load-btn');
+
+  if (!raw) { showSheetMsg(msgId, 'warn', 'Vui lòng nhập link Google Sheet trước!'); return; }
+
+  btn.disabled = true;
+  btn.innerHTML = '<span style="display:inline-block;width:11px;height:11px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:rot .6s linear infinite;vertical-align:middle"></span>';
+  showSheetMsg(msgId, 'loading', 'Đang kết nối Google Sheet...');
+
   try {
-    const res  = await fetch(toCSVUrl(raw));
+    const csvUrl = toCSVUrl(raw);
+    const res    = await fetch(csvUrl);
+    if (!res.ok) throw new Error('Không tải được sheet (HTTP ' + res.status + '). Kiểm tra lại link.');
     const text = await res.text();
-    kocData    = parseCSV(text);
-    if (kocData.length === 0) throw new Error('Sheet trống hoặc chưa có dữ liệu');
-    localStorage.setItem('kocUrl', raw);
-    renderDNA('koc', kocData);
+    if (text.trim().startsWith('<!')) {
+      throw new Error('Sheet đang bị giới hạn quyền. Vào Google Sheet → Share → đổi thành "Anyone with the link can view".');
+    }
+    const data = parseCSV(text);
+    if (data.length === 0) throw new Error('Sheet chưa có dữ liệu hoặc header không đúng.');
+
+    if (type === 'koc') { kocData = data; localStorage.setItem('kocUrl', raw); renderDNA('koc', kocData); }
+    else { viralData = data; localStorage.setItem('viralUrl', raw); renderDNA('viral', viralData); }
+
     updatePills();
-    toast('✓ Tải KOC content win: ' + kocData.length + ' mẫu');
+    showSheetMsg(msgId, 'ok', '✓ Đã tải ' + data.length + ' mẫu thành công!');
+    toast('✓ ' + (type === 'koc' ? 'KOC Content Win' : 'Facebook Viral') + ': ' + data.length + ' mẫu');
   } catch(e) {
-    toast('Lỗi tải KOC sheet: ' + e.message);
+    showSheetMsg(msgId, 'error', '✗ ' + e.message);
   }
-  btn.disabled = false; btn.textContent = 'Tải';
+  btn.disabled = false; btn.innerHTML = 'Tải';
 }
 
-async function loadViral() {
-  const raw = document.getElementById('viralUrl').value.trim();
-  if (!raw) { toast('Nhập link Google Sheet Viral trước!'); return; }
-  const btn = document.querySelector('#viralUrl').parentElement.querySelector('.sheet-load-btn');
-  btn.disabled = true; btn.textContent = '...';
-  try {
-    const res   = await fetch(toCSVUrl(raw));
-    const text  = await res.text();
-    viralData   = parseCSV(text);
-    if (viralData.length === 0) throw new Error('Sheet trống hoặc chưa có dữ liệu');
-    localStorage.setItem('viralUrl', raw);
-    renderDNA('viral', viralData);
-    updatePills();
-    toast('✓ Tải Viral posts: ' + viralData.length + ' mẫu');
-  } catch(e) {
-    toast('Lỗi tải Viral sheet: ' + e.message);
-  }
-  btn.disabled = false; btn.textContent = 'Tải';
+function showSheetMsg(id, type, text) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const colors = {
+    loading: { bg:'#FEF3E2', color:'#92400E', border:'#FDE68A' },
+    ok:      { bg:'#E8F5EE', color:'#1B7A5A', border:'#A7D7B8' },
+    warn:    { bg:'#FEF3E2', color:'#92400E', border:'#FDE68A' },
+    error:   { bg:'#FEF2F2', color:'#DC2626', border:'#FECACA' },
+  };
+  const c = colors[type] || colors.warn;
+  el.style.cssText = 'display:block;padding:8px 11px;border-radius:6px;font-size:12px;line-height:1.6;margin-top:8px;background:' + c.bg + ';color:' + c.color + ';border:1px solid ' + c.border;
+  el.textContent = text;
 }
+
+async function loadKOC()   { await loadSheet('koc');   }
+async function loadViral() { await loadSheet('viral'); }
 
 async function syncAll() {
   setSt('loading', 'Đang đồng bộ...');
