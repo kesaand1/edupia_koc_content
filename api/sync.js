@@ -158,7 +158,7 @@ async function createEmbedding(text, apiKey) {
 
 // Pseudo-embedding 1536 chiều từ text (dùng đến khi có Anthropic embedding API)
 function pseudoEmbedding(text) {
-  const dim = 1536;
+  const dim = 1024;
   const vec = new Array(dim).fill(0);
   for (let i = 0; i < text.length; i++) {
     const code = text.charCodeAt(i);
