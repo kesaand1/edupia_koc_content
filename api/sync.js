@@ -12,14 +12,14 @@ export default async function handler(req, res) {
   const KOC_SHEET_URL  = process.env.KOC_SHEET_URL;
   const VIRAL_SHEET_URL= process.env.VIRAL_SHEET_URL;
 
-  if (!ANTHROPIC_KEY || !PINECONE_KEY || !PINECONE_HOST) {
-    return res.status(500).json({ error: 'Thiếu environment variables: ANTHROPIC_API_KEY, PINECONE_API_KEY, PINECONE_HOST' });
+  if (!PINECONE_KEY || !PINECONE_HOST) {
+    return res.status(500).json({ error: 'Thiếu environment variables: PINECONE_API_KEY, PINECONE_HOST' });
   }
 
   try {
-    const results = { koc: 0, viral: 0, errors: [] };
+    const results = { koc: 0, viral: 0, return: 0, errors: [] };
 
-    // ── 1. Đọc KOC Sheet ──
+    // ── 1. Đọc KOC Sheet (lần đầu) ──
     if (KOC_SHEET_URL) {
       const kocData = await fetchSheet(KOC_SHEET_URL);
       if (kocData.length > 0) {
@@ -37,9 +37,18 @@ export default async function handler(req, res) {
       }
     }
 
+    // ── 3. Đọc Return Sheet (lần 2+) ──
+    if (RETURN_SHEET_URL) {
+      const returnData = await fetchSheet(RETURN_SHEET_URL);
+      if (returnData.length > 0) {
+        await upsertToPinecone(returnData, 'return', ANTHROPIC_KEY, PINECONE_KEY, PINECONE_HOST);
+        results.return = returnData.length;
+      }
+    }
+
     return res.status(200).json({
       success: true,
-      message: `Đã học xong: ${results.koc} mẫu KOC + ${results.viral} bài viral`,
+      message: `Đã học xong: ${results.koc} KOC lần đầu + ${results.viral} viral + ${results.return||0} KOC lần 2+`,
       ...results
     });
 
@@ -79,23 +88,35 @@ async function upsertToPinecone(rows, namespace, anthropicKey, pineconeKey, pine
         // Tạo embedding qua Anthropic
         const embedding = await createEmbedding(text, anthropicKey);
 
+        const keys = Object.keys(row);
+        let metadata;
+        if (namespace === 'koc') {
+          metadata = {
+            type:    'koc',
+            info:    (row['thong_tin_koc']      || row[keys[0]] || '').slice(0, 500),
+            level:   row['trinh_do_tieng_anh']  || row[keys[1]] || '',
+            grade:   row['lop_hoc']             || row[keys[2]] || '',
+            content: (row['content_hieu_qua']   || row[keys[3]] || '').slice(0, 800),
+          };
+        } else if (namespace === 'return') {
+          // 2 cột: thong_tin_koc + content_hieu_qua
+          metadata = {
+            type:    'return',
+            info:    (row['thong_tin_koc']    || row[keys[0]] || '').slice(0, 500),
+            content: (row['content_hieu_qua'] || row[keys[1]] || '').slice(0, 800),
+          };
+        } else {
+          metadata = {
+            type:       'viral',
+            content:    (Object.values(row)[0] || '').slice(0, 800),
+            engagement: Object.values(row)[1] || '',
+            source:     Object.values(row)[2] || '',
+          };
+        }
         return {
-          id: `${namespace}_${i + j}`,
+          id:     `${namespace}_${i + j}`,
           values: embedding,
-          metadata: namespace === 'koc'
-            ? {
-                type:    'koc',
-                info:    (row['thong_tin_koc']        || row[Object.keys(row)[0]] || '').slice(0, 500),
-                level:   row['trinh_do_tieng_anh']    || row[Object.keys(row)[1]] || '',
-                grade:   row['lop_hoc']               || row[Object.keys(row)[2]] || '',
-                content: (row['content_hieu_qua']     || row[Object.keys(row)[3]] || '').slice(0, 2000),
-              }
-            : {
-                type:    'viral',
-                content: (Object.values(row)[0] || '').slice(0, 2000),
-                engagement: Object.values(row)[1] || '',
-                source:     Object.values(row)[2] || '',
-              }
+          metadata,
         };
       })
     );
@@ -123,12 +144,19 @@ async function upsertToPinecone(rows, namespace, anthropicKey, pineconeKey, pine
 // ── Tạo embedding text từ row ──
 function rowToText(row, type) {
   if (type === 'koc') {
+    // 4 cột: thong_tin_koc, trinh_do_tieng_anh, lop_hoc, content_hieu_qua
     const keys    = Object.keys(row);
-    const info    = row['thong_tin_koc']     || row[keys[0]] || '';
-    const level   = row['trinh_do_tieng_anh']|| row[keys[1]] || '';
-    const grade   = row['lop_hoc']           || row[keys[2]] || '';
-    const content = row['content_hieu_qua']  || row[keys[3]] || '';
+    const info    = row['thong_tin_koc']      || row[keys[0]] || '';
+    const level   = row['trinh_do_tieng_anh'] || row[keys[1]] || '';
+    const grade   = row['lop_hoc']            || row[keys[2]] || '';
+    const content = row['content_hieu_qua']   || row[keys[3]] || '';
     return `Thông tin KOC: ${info}\nTrình độ: ${level}\nLớp: ${grade}\nContent: ${content}`.slice(0, 3000);
+  } else if (type === 'return') {
+    // 2 cột: thong_tin_koc, content_hieu_qua
+    const keys    = Object.keys(row);
+    const info    = row['thong_tin_koc']    || row[keys[0]] || '';
+    const content = row['content_hieu_qua'] || row[keys[1]] || '';
+    return `Thông tin KOC: ${info}\nContent lần 2+: ${content}`.slice(0, 3000);
   } else {
     return Object.values(row).join(' ').slice(0, 3000);
   }
