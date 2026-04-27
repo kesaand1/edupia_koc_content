@@ -95,14 +95,29 @@ JSON hợp lệ, không markdown, không backtick:
       },
       body: JSON.stringify({
         model:      'claude-sonnet-4-20250514',
-        max_tokens: 1200,
+        max_tokens: 2000,
         messages:   [{ role: 'user', content: prompt }],
       }),
     });
 
     const claudeData = await claudeRes.json();
     const raw        = (claudeData.content || []).map(b => b.text || '').join('');
-    const parsed     = JSON.parse(raw.replace(/```json|```/g, '').trim());
+
+    // Robust JSON extraction — handles truncated or wrapped responses
+    let parsed;
+    try {
+      parsed = JSON.parse(raw.replace(/```json|```/g, '').trim());
+    } catch(parseErr) {
+      // Try to extract JSON object from partial response
+      const match = raw.match(/\{[\s\S]*"versions"[\s\S]*\}/);
+      if (match) {
+        try { parsed = JSON.parse(match[0]); } catch(e2) { throw new Error('JSON parse thất bại: ' + raw.slice(0, 200)); }
+      } else {
+        throw new Error('Claude trả về không đúng format JSON. Raw: ' + raw.slice(0, 200));
+      }
+    }
+
+    if (!parsed?.versions?.length) throw new Error('Không có versions trong response');
 
     return res.status(200).json({
       versions:    parsed.versions,
