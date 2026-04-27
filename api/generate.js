@@ -137,7 +137,7 @@ async function queryPinecone(vector, namespace, topK, pineconeKey, pineconeHost)
 
 // Pseudo-embedding (cùng hàm với sync.js để vector space nhất quán)
 function pseudoEmbedding(text) {
-  const dim = 1536;
+  const dim = 1024;
   const vec = new Array(dim).fill(0);
   for (let i = 0; i < text.length; i++) {
     const code = text.charCodeAt(i);
