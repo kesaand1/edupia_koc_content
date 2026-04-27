@@ -6,512 +6,233 @@
 <title>Edupia · KOC Studio</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
 <style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-:root {
-  --ink:    #0F0F0F;
-  --ink2:   #3A3A3A;
-  --ink3:   #787878;
-  --rule:   rgba(0,0,0,0.08);
-  --rule2:  rgba(0,0,0,0.14);
-  --cream:  #FAF8F4;
-  --white:  #FFFFFF;
-  --sage:   #2D6A4F;
-  --sage2:  #40916C;
-  --sage3:  #D8F3DC;
-  --amber:  #C77C2D;
-  --amberl: #FEF3E2;
-  --blue:   #1D4E89;
-  --bluel:  #EBF2FA;
-  --r: 10px; --rs: 6px;
-  --sh: 0 2px 20px rgba(0,0,0,0.06);
-  --sh2: 0 8px 48px rgba(0,0,0,0.12);
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#0F0F0F;--ink2:#3A3A3A;--ink3:#787878;
+  --rule:rgba(0,0,0,0.07);--rule2:rgba(0,0,0,0.13);
+  --cream:#FAF8F4;--white:#FFFFFF;
+  --sage:#1B7A5A;--sage2:#2EA87A;--sage3:#D8F3DC;--sage4:#0f5c40;
+  --amber:#B8843A;--amberl:#FEF3E2;
+  --blue:#1D4E89;--bluel:#EBF2FA;
+  --red:#DC2626;--redl:#FEF2F2;
+  --r:12px;--rs:7px;
+  --sh:0 1px 12px rgba(0,0,0,0.06);--sh2:0 8px 40px rgba(0,0,0,0.12)
 }
-
-html { scroll-behavior: smooth; }
-body {
-  font-family: 'DM Sans', sans-serif;
-  background: var(--cream);
-  color: var(--ink);
-  min-height: 100vh;
-  font-size: 14px;
-  line-height: 1.6;
-}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;background:#EEECEA;color:var(--ink);min-height:100vh;font-size:14px;line-height:1.6}
 
 /* ── HEADER ── */
-.hdr {
-  background: var(--ink);
-  padding: 0 2rem;
-  height: 56px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  position: sticky; top: 0; z-index: 300;
-}
-.logo {
-  font-family: 'DM Serif Display', serif;
-  font-size: 18px;
-  color: var(--white);
-  letter-spacing: -0.3px;
-  display: flex; align-items: center; gap: 10px;
-  text-decoration: none;
-}
-.logo em { font-style: italic; color: #A8D5BA; }
-.hdr-status {
-  display: flex; align-items: center; gap: 12px;
-  font-size: 12px; color: rgba(255,255,255,0.55);
-}
-.sdot {
-  width: 7px; height: 7px; border-radius: 50%;
-  background: #555; transition: background .3s; flex-shrink: 0;
-}
-.sdot.ok     { background: #52c47a; }
-.sdot.loading{ background: #f5a623; animation: pulse 1s infinite; }
-.sdot.err    { background: #ff5c5c; }
-@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
-
-.hdr-sync {
-  background: rgba(255,255,255,0.08);
-  border: 1px solid rgba(255,255,255,0.15);
-  border-radius: var(--rs);
-  padding: 5px 12px; font-size: 12px; font-weight: 500;
-  color: rgba(255,255,255,0.75); cursor: pointer;
-  font-family: 'DM Sans', sans-serif;
-  transition: all .15s;
-}
-.hdr-sync:hover { background: rgba(255,255,255,0.14); color: #fff; }
+.hdr{background:var(--ink);height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 1.75rem;position:sticky;top:0;z-index:300}
+.logo{font-family:'DM Serif Display',serif;font-size:18px;color:var(--white);display:flex;align-items:center;gap:10px;text-decoration:none}
+.logo em{font-style:italic;color:#A8D5BA}
+.hdr-r{display:flex;align-items:center;gap:10px}
+.db-chip{display:flex;align-items:center;gap:6px;font-size:12px;border-radius:20px;padding:5px 12px;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.7)}
+.sdot{width:7px;height:7px;border-radius:50%;background:#555;transition:background .3s;flex-shrink:0}
+.sdot.ok{background:#52c47a}
+.sdot.loading{background:#f5a623;animation:blink 1s infinite}
+.sdot.err{background:#ff5c5c}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
 
 /* ── LAYOUT ── */
-.wrap { max-width: 1280px; margin: 0 auto; padding: 2rem 1.5rem; }
+.wrap{max-width:1240px;margin:0 auto;padding:1.75rem 1.25rem}
 
-/* ── DNA SECTION ── */
-.dna-section {
-  margin-bottom: 2rem;
-}
-.section-eyebrow {
-  font-size: 10px; font-weight: 600; letter-spacing: .1em;
-  text-transform: uppercase; color: var(--ink3);
-  margin-bottom: .75rem;
-}
-.dna-grid {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;
-}
-.dna-card {
-  background: var(--white);
-  border: 1px solid var(--rule2);
-  border-radius: var(--r);
-  box-shadow: var(--sh);
-  overflow: hidden;
-}
-.dna-card-hd {
-  padding: .875rem 1.125rem;
-  border-bottom: 1px solid var(--rule);
-  display: flex; align-items: center; justify-content: space-between;
-}
-.dna-card-hd-l { display: flex; align-items: center; gap: 8px; }
-.dna-icon {
-  width: 28px; height: 28px; border-radius: var(--rs);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 13px; flex-shrink: 0;
-}
-.dna-icon.koc   { background: var(--sage3); }
-.dna-icon.viral { background: var(--amberl); }
-.dna-title { font-size: 13px; font-weight: 600; color: var(--ink); }
-.dna-sub   { font-size: 11px; color: var(--ink3); margin-top: 1px; }
-.dna-count {
-  font-size: 11px; font-weight: 600;
-  padding: 2px 8px; border-radius: 10px;
-}
-.dna-count.koc   { background: var(--sage3); color: var(--sage); }
-.dna-count.viral { background: var(--amberl); color: var(--amber); }
-.dna-count.zero  { background: var(--rule); color: var(--ink3); }
+/* ── DB SECTION ── */
+.db-section{margin-bottom:1.75rem}
+.eyebrow{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);margin-bottom:.875rem}
 
-.dna-body { padding: .875rem 1.125rem; }
-.sheet-input-wrap { position: relative; }
-.sheet-input {
-  width: 100%; padding: 8px 70px 8px 11px;
-  font-size: 12.5px; font-family: 'DM Sans', sans-serif;
-  border: 1px solid var(--rule2); border-radius: var(--rs);
-  background: var(--cream); color: var(--ink); outline: none;
-  transition: border-color .18s, box-shadow .18s;
-}
-.sheet-input:focus {
-  border-color: var(--sage); box-shadow: 0 0 0 3px rgba(45,106,79,.1);
-  background: var(--white);
-}
-.sheet-input::placeholder { color: #bbb; }
-.sheet-load-btn {
-  position: absolute; right: 5px; top: 50%; transform: translateY(-50%);
-  background: var(--ink); color: var(--white);
-  border: none; border-radius: 5px;
-  padding: 4px 10px; font-size: 11px; font-weight: 600;
-  font-family: 'DM Sans', sans-serif; cursor: pointer;
-  transition: background .15s;
-}
-.sheet-load-btn:hover { background: var(--ink2); }
-.sheet-load-btn:disabled { background: #ccc; cursor: not-allowed; }
+.db-card{background:var(--white);border:1px solid var(--rule2);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden}
 
-.dna-preview {
-  margin-top: 10px; max-height: 120px; overflow-y: auto;
-}
-.dna-row {
-  display: flex; align-items: flex-start; gap: 8px;
-  padding: 5px 0; border-bottom: 1px solid var(--rule);
-  font-size: 11.5px; color: var(--ink2);
-}
-.dna-row:last-child { border-bottom: none; }
-.dna-row-num { color: var(--ink3); flex-shrink: 0; width: 16px; }
-.dna-row-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
-.dna-empty-msg {
-  font-size: 12px; color: var(--ink3); text-align: center;
-  padding: 1rem 0; font-style: italic;
-}
+/* Status bar */
+.db-status-bar{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:var(--rule);border-bottom:1px solid var(--rule)}
+.db-stat{background:var(--white);padding:.875rem 1.25rem;text-align:center}
+.db-stat-num{font-family:'DM Serif Display',serif;font-size:28px;color:var(--ink);line-height:1}
+.db-stat-num.green{color:var(--sage)}
+.db-stat-num.amber{color:var(--amber)}
+.db-stat-label{font-size:11px;color:var(--ink3);margin-top:3px}
 
-/* ── MAIN AREA ── */
-.main-grid {
-  display: grid;
-  grid-template-columns: 400px 1fr;
-  gap: 1.5rem;
-  align-items: start;
-}
+/* Sheet inputs */
+.db-inputs{display:grid;grid-template-columns:1fr 1fr;gap:0;border-bottom:1px solid var(--rule)}
+.db-input-block{padding:1rem 1.25rem;border-right:1px solid var(--rule)}
+.db-input-block:last-child{border-right:none}
+.db-input-label{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--ink2);margin-bottom:7px}
+.db-input-ico{width:20px;height:20px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0}
+.ico-koc{background:var(--sage3)}
+.ico-viral{background:var(--amberl)}
+.sheet-row{display:flex;gap:6px}
+.sheet-inp{flex:1;padding:7px 10px;font-size:12.5px;font-family:'DM Sans',sans-serif;border:1px solid var(--rule2);border-radius:var(--rs);background:#F7F6F3;color:var(--ink);outline:none;transition:border-color .15s,box-shadow .15s}
+.sheet-inp:focus{border-color:var(--sage);box-shadow:0 0 0 3px rgba(27,122,90,.09);background:var(--white)}
+.sheet-inp::placeholder{color:#bbb}
+.save-btn{padding:7px 12px;background:var(--ink2);color:var(--white);border:none;border-radius:var(--rs);font-size:11px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;white-space:nowrap;transition:background .15s}
+.save-btn:hover{background:var(--ink)}
+
+/* Sync button */
+.db-footer{padding:.875rem 1.25rem;display:flex;align-items:center;justify-content:space-between;background:#FAFAF8}
+.sync-info{font-size:12px;color:var(--ink3)}
+.sync-info strong{color:var(--ink2)}
+.sync-btn{display:flex;align-items:center;gap:7px;padding:9px 20px;background:var(--sage);color:var(--white);border:none;border-radius:var(--rs);font-size:13px;font-weight:700;font-family:'DM Serif Display',serif;cursor:pointer;transition:all .18s}
+.sync-btn:hover{background:var(--sage4);transform:translateY(-1px);box-shadow:0 4px 16px rgba(27,122,90,.3)}
+.sync-btn:disabled{background:#ccc;cursor:not-allowed;transform:none;box-shadow:none}
+.sync-progress{font-size:12px;color:var(--ink3);margin-top:6px;display:none;padding:0 1.25rem 1rem}
+.sync-progress.show{display:block}
+.prog-bar-wrap{height:4px;background:var(--rule);border-radius:2px;margin-top:6px;overflow:hidden}
+.prog-bar{height:100%;background:var(--sage);border-radius:2px;transition:width .3s;width:0%}
+
+/* ── MAIN GRID ── */
+.main-grid{display:grid;grid-template-columns:400px 1fr;gap:1.5rem;align-items:start}
 
 /* ── INPUT PANEL ── */
-.input-panel {
-  background: var(--white);
-  border: 1px solid var(--rule2);
-  border-radius: var(--r);
-  box-shadow: var(--sh);
-  overflow: hidden;
-  position: sticky; top: 72px;
-}
-.ip-hd {
-  background: var(--ink);
-  padding: 1.125rem 1.375rem;
-}
-.ip-hd h2 {
-  font-family: 'DM Serif Display', serif;
-  font-size: 18px; color: var(--white);
-  margin-bottom: 3px;
-}
-.ip-hd p { font-size: 12px; color: rgba(255,255,255,.55); }
+.panel{background:var(--white);border:1px solid var(--rule2);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden;position:sticky;top:74px}
+.ph{background:var(--ink);padding:1.125rem 1.375rem}
+.ph h2{font-family:'DM Serif Display',serif;font-size:19px;color:var(--white);margin-bottom:3px}
+.ph p{font-size:12px;color:rgba(255,255,255,.5)}
+.pb{padding:1.25rem 1.375rem}
+.flbl{display:block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--ink3);margin-bottom:5px}
+.field{margin-bottom:14px}
+.koc-area{width:100%;min-height:220px;padding:12px 14px;font-size:13.5px;font-family:'DM Sans',sans-serif;border:1.5px solid var(--rule2);border-radius:var(--r);background:#F7F6F3;color:var(--ink);outline:none;resize:vertical;line-height:1.75;transition:border-color .18s,box-shadow .18s}
+.koc-area:focus{border-color:var(--sage);box-shadow:0 0 0 3px rgba(27,122,90,.1);background:var(--white)}
+.koc-area::placeholder{color:#bbb;line-height:1.75}
+.koc-hint{margin-top:6px;font-size:11px;color:var(--ink3);line-height:1.6;padding:8px 10px;background:#F7F6F3;border-radius:var(--rs);border:1px solid var(--rule)}
+.link-inp{width:100%;padding:9px 11px;font-size:13px;font-family:'DM Sans',sans-serif;border:1.5px solid var(--rule2);border-radius:var(--rs);background:#F7F6F3;color:var(--ink);outline:none;transition:border-color .18s}
+.link-inp:focus{border-color:var(--sage);box-shadow:0 0 0 3px rgba(27,122,90,.09);background:var(--white)}
+.hr{height:1px;background:var(--rule);margin:14px 0}
 
-.ip-body { padding: 1.25rem 1.375rem; }
+/* DNA status in panel */
+.dna-status{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:var(--rs);border:1px solid var(--rule);background:#F7F6F3;margin-bottom:12px;font-size:12px}
+.dna-status.ready{background:var(--sage3);border-color:#A7D7B8;color:var(--sage)}
+.dna-status.empty{color:var(--ink3)}
+.dna-status-ico{font-size:14px;flex-shrink:0}
 
-.flbl {
-  display: block; font-size: 10px; font-weight: 600;
-  text-transform: uppercase; letter-spacing: .07em;
-  color: var(--ink3); margin-bottom: 5px;
-}
+.gen-btn{width:100%;padding:13px;background:var(--sage);color:var(--white);border:none;border-radius:var(--rs);font-size:14px;font-weight:700;font-family:'DM Serif Display',serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .18s}
+.gen-btn:hover{background:var(--sage4);transform:translateY(-1px);box-shadow:0 4px 16px rgba(27,122,90,.28)}
+.gen-btn:disabled{background:#D4D4D8;cursor:not-allowed;transform:none;box-shadow:none;color:#A1A1AA}
+.spin{width:15px;height:15px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:rot .65s linear infinite;display:none}
+.spin.show{display:block}
+@keyframes rot{to{transform:rotate(360deg)}}
 
-/* Big KOC textbox */
-.koc-textarea {
-  width: 100%;
-  min-height: 220px;
-  padding: 12px 14px;
-  font-size: 13.5px;
-  font-family: 'DM Sans', sans-serif;
-  border: 1.5px solid var(--rule2);
-  border-radius: var(--r);
-  background: var(--cream);
-  color: var(--ink);
-  outline: none;
-  resize: vertical;
-  line-height: 1.75;
-  transition: border-color .18s, box-shadow .18s;
-}
-.koc-textarea:focus {
-  border-color: var(--sage);
-  box-shadow: 0 0 0 3px rgba(45,106,79,.1);
-  background: var(--white);
-}
-.koc-textarea::placeholder { color: #bbb; line-height: 1.75; }
+/* ── OUTPUT ── */
+.rarea{min-height:480px}
+.out-hd{margin-bottom:1.25rem}
+.out-hd h3{font-family:'DM Serif Display',serif;font-size:22px;letter-spacing:-.3px}
+.out-hd-sub{font-size:12px;color:var(--ink3);margin-top:2px}
 
-.koc-hint {
-  margin-top: 6px;
-  font-size: 11px; color: var(--ink3);
-  line-height: 1.6;
-  padding: 8px 10px;
-  background: var(--cream);
-  border-radius: var(--rs);
-  border: 1px solid var(--rule);
-}
+.empty-state{background:var(--white);border:1.5px dashed var(--rule2);border-radius:var(--r);padding:5rem 2rem;text-align:center}
+.empty-ico{font-family:'DM Serif Display',serif;font-size:52px;color:var(--rule2);margin-bottom:1rem}
+.empty-state h4{font-size:15px;font-weight:600;margin-bottom:6px}
+.empty-state p{font-size:13px;color:var(--ink3);line-height:1.7}
 
-.hr { height: 1px; background: var(--rule); margin: 1rem 0; }
+/* DNA match badge */
+.dna-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:3px 9px;border-radius:10px;margin-bottom:12px;background:var(--sage3);color:var(--sage)}
+.dna-badge.low{background:var(--amberl);color:var(--amber)}
 
-.link-input {
-  width: 100%; padding: 9px 11px;
-  font-size: 13px; font-family: 'DM Sans', sans-serif;
-  border: 1.5px solid var(--rule2); border-radius: var(--rs);
-  background: var(--cream); color: var(--ink); outline: none;
-  transition: border-color .18s, box-shadow .18s;
-}
-.link-input:focus {
-  border-color: var(--sage);
-  box-shadow: 0 0 0 3px rgba(45,106,79,.1);
-  background: var(--white);
-}
+.result-cards{display:grid;grid-template-columns:1fr 1fr;gap:1.125rem}
+.ccard{background:var(--white);border:1px solid var(--rule2);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden;animation:up .4s ease both}
+.ccard:nth-child(2){animation-delay:.1s}
+@keyframes up{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.ctop{display:flex;align-items:center;justify-content:space-between;padding:.875rem 1.125rem;border-bottom:1px solid var(--rule)}
+.clabel{display:flex;align-items:center;gap:8px}
+.cname{font-size:13px;font-weight:700}
+.csub{font-size:11px;color:var(--ink3)}
+.cbadge{font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:3px 9px;border-radius:10px}
+.cb1{background:var(--sage3);color:var(--sage)}
+.cb2{background:var(--amberl);color:var(--amber)}
+.cbody{padding:1.125rem}
+.fb-post{background:#F0F2F5;border-radius:8px;padding:1rem 1.125rem;font-size:13.5px;line-height:1.85;color:#1C1E21;white-space:pre-wrap;word-break:break-word;font-family:'DM Sans',sans-serif}
+.fb-post::before{content:'';display:block;width:32px;height:32px;background:var(--sage);border-radius:50%;margin-bottom:8px}
+.cfoot{padding:.75rem 1.125rem;border-top:1px solid var(--rule);display:flex;gap:6px;align-items:center}
+.cpybtn,.crebtn{font-size:12px;font-weight:600;padding:6px 12px;border-radius:var(--rs);border:1px solid var(--rule2);cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;gap:4px;transition:all .15s}
+.cpybtn{background:var(--ink);color:var(--white);border-color:var(--ink)}
+.cpybtn:hover{background:var(--ink2)}
+.cpybtn.ok{background:var(--sage2);border-color:var(--sage2)}
+.crebtn{background:var(--white);color:var(--ink3)}
+.crebtn:hover{border-color:var(--sage);color:var(--sage)}
+.ccard-chars{margin-left:auto;font-size:11px;color:var(--ink3)}
 
-.gen-btn {
-  width: 100%; padding: 13px;
-  background: var(--sage); color: var(--white);
-  border: none; border-radius: var(--rs);
-  font-size: 14px; font-weight: 600;
-  font-family: 'DM Serif Display', serif;
-  cursor: pointer; margin-top: 6px;
-  display: flex; align-items: center; justify-content: center; gap: 8px;
-  transition: all .18s; letter-spacing: .01em;
-}
-.gen-btn:hover { background: var(--sage2); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(45,106,79,.3); }
-.gen-btn:active { transform: translateY(0); }
-.gen-btn:disabled { background: #ccc; cursor: not-allowed; transform: none; box-shadow: none; }
+.skel-wrap{display:grid;grid-template-columns:1fr 1fr;gap:1.125rem}
+.skel-card{background:var(--white);border:1px solid var(--rule2);border-radius:var(--r);padding:1.125rem}
+.sk{background:linear-gradient(90deg,#EFEFEF 25%,#E5E5E5 50%,#EFEFEF 75%);background-size:200% 100%;animation:sh 1.1s infinite;border-radius:4px;margin-bottom:8px}
+@keyframes sh{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
-.spin-el {
-  width: 15px; height: 15px;
-  border: 2px solid rgba(255,255,255,.3);
-  border-top-color: #fff;
-  border-radius: 50%;
-  animation: rot .65s linear infinite;
-  display: none;
-}
-.spin-el.show { display: block; }
-@keyframes rot { to { transform: rotate(360deg); } }
+.err-bar{background:var(--redl);border:1px solid #FECACA;border-radius:var(--rs);padding:10px 14px;font-size:13px;color:var(--red);margin-bottom:1rem;display:none;line-height:1.6}
+.toast{position:fixed;bottom:20px;right:20px;background:var(--ink);color:var(--white);padding:10px 16px;border-radius:var(--rs);font-size:13px;font-weight:500;z-index:9999;transform:translateY(60px);opacity:0;transition:all .28s;pointer-events:none;max-width:320px}
+.toast.show{transform:translateY(0);opacity:1}
 
-.dna-status-bar {
-  margin-top: 10px;
-  display: flex; gap: 8px; align-items: center;
-  font-size: 11px;
-}
-.dna-pill {
-  padding: 3px 9px; border-radius: 10px;
-  font-size: 11px; font-weight: 600;
-}
-.dna-pill.koc   { background: var(--sage3); color: var(--sage); }
-.dna-pill.viral { background: var(--amberl); color: var(--amber); }
-.dna-pill.none  { background: var(--rule); color: var(--ink3); }
-
-/* ── OUTPUT AREA ── */
-.output-area { min-height: 500px; }
-
-.output-hd {
-  display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 1.25rem;
-}
-.output-hd h3 {
-  font-family: 'DM Serif Display', serif;
-  font-size: 22px; letter-spacing: -.3px;
-}
-.output-hd-sub { font-size: 12px; color: var(--ink3); margin-top: 2px; }
-
-/* Empty state */
-.empty-state {
-  background: var(--white);
-  border: 1.5px dashed var(--rule2);
-  border-radius: var(--r);
-  padding: 5rem 2rem;
-  text-align: center;
-}
-.empty-state-ico {
-  font-family: 'DM Serif Display', serif;
-  font-size: 52px; color: var(--rule2);
-  margin-bottom: 1rem;
-}
-.empty-state h4 { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
-.empty-state p  { font-size: 13px; color: var(--ink3); line-height: 1.7; }
-
-/* Content cards */
-.result-cards {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.125rem;
-}
-.ccard {
-  background: var(--white);
-  border: 1px solid var(--rule2);
-  border-radius: var(--r);
-  box-shadow: var(--sh);
-  overflow: hidden;
-  animation: cardUp .4s ease both;
-}
-.ccard:nth-child(2) { animation-delay: .1s; }
-@keyframes cardUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
-
-.ccard-hd {
-  padding: .875rem 1.125rem;
-  border-bottom: 1px solid var(--rule);
-  display: flex; align-items: center; justify-content: space-between;
-}
-.ccard-label {
-  display: flex; align-items: center; gap: 8px;
-}
-.cv-badge {
-  font-size: 10px; font-weight: 700; letter-spacing: .06em;
-  text-transform: uppercase; padding: 3px 9px; border-radius: 10px;
-}
-.cv-badge.v1 { background: var(--sage3); color: var(--sage); }
-.cv-badge.v2 { background: var(--amberl); color: var(--amber); }
-.ccard-style { font-size: 13px; font-weight: 600; color: var(--ink); }
-.ccard-wc    { font-size: 11px; color: var(--ink3); }
-
-.ccard-body { padding: 1.125rem; }
-.fb-post {
-  background: #F0F2F5;
-  border-radius: 8px;
-  padding: 1rem 1.125rem;
-  font-size: 13.5px;
-  line-height: 1.85;
-  color: #1C1E21;
-  white-space: pre-wrap;
-  word-break: break-word;
-  font-family: 'DM Sans', sans-serif;
-}
-.fb-post::before {
-  content: '';
-  display: block;
-  width: 32px; height: 32px;
-  background: var(--sage);
-  border-radius: 50%;
-  margin-bottom: 8px;
-}
-
-.ccard-foot {
-  padding: .75rem 1.125rem;
-  border-top: 1px solid var(--rule);
-  display: flex; gap: 6px; align-items: center;
-}
-.copy-btn, .regen-btn {
-  font-size: 12px; font-weight: 600;
-  padding: 6px 12px; border-radius: var(--rs);
-  border: 1px solid var(--rule2);
-  cursor: pointer; font-family: 'DM Sans', sans-serif;
-  display: flex; align-items: center; gap: 4px;
-  transition: all .15s;
-}
-.copy-btn {
-  background: var(--ink); color: var(--white); border-color: var(--ink);
-}
-.copy-btn:hover { background: var(--ink2); }
-.copy-btn.ok    { background: var(--sage2); border-color: var(--sage2); }
-.regen-btn { background: var(--white); color: var(--ink3); }
-.regen-btn:hover { border-color: var(--sage); color: var(--sage); }
-.ccard-chars { margin-left: auto; font-size: 11px; color: var(--ink3); }
-
-/* Skeleton */
-.skel-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 1.125rem; }
-.skel-card {
-  background: var(--white); border: 1px solid var(--rule2);
-  border-radius: var(--r); padding: 1.125rem;
-}
-.sk {
-  background: linear-gradient(90deg, #f0eeeb 25%, #e8e5e0 50%, #f0eeeb 75%);
-  background-size: 200% 100%;
-  animation: sh 1.1s infinite;
-  border-radius: 4px; margin-bottom: 8px;
-}
-@keyframes sh { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
-
-/* Error */
-.err-bar {
-  background: #FEF2F2; border: 1px solid #FECACA;
-  border-radius: var(--rs); padding: 10px 14px;
-  font-size: 13px; color: #DC2626;
-  margin-bottom: 1rem; display: none; line-height: 1.6;
-}
-
-/* Toast */
-.toast {
-  position: fixed; bottom: 20px; right: 20px;
-  background: var(--ink); color: var(--white);
-  padding: 10px 16px; border-radius: var(--rs);
-  font-size: 13px; font-weight: 500;
-  z-index: 9999; transform: translateY(60px); opacity: 0;
-  transition: all .28s; pointer-events: none; max-width: 320px;
-}
-.toast.show { transform: translateY(0); opacity: 1; }
-
-/* Scrollbar */
-.dna-preview::-webkit-scrollbar { width: 4px; }
-.dna-preview::-webkit-scrollbar-track { background: transparent; }
-.dna-preview::-webkit-scrollbar-thumb { background: var(--rule2); border-radius: 2px; }
-
-@media (max-width: 900px) {
-  .main-grid { grid-template-columns: 1fr; }
-  .input-panel { position: static; }
-  .dna-grid { grid-template-columns: 1fr; }
-  .result-cards, .skel-wrap { grid-template-columns: 1fr; }
-}
+@media(max-width:900px){.main-grid{grid-template-columns:1fr}.panel{position:static}.result-cards,.skel-wrap{grid-template-columns:1fr}.db-inputs{grid-template-columns:1fr}.db-input-block{border-right:none;border-bottom:1px solid var(--rule)}.db-status-bar{grid-template-columns:1fr 1fr}}
 </style>
 </head>
 <body>
 
-<!-- HEADER -->
 <header class="hdr">
-  <a class="logo" href="#">
-    Edupia <em>KOC Studio</em>
-  </a>
-  <div class="hdr-status">
-    <div class="sdot" id="sdot"></div>
-    <span id="stxt">Chưa tải dữ liệu</span>
-    <button class="hdr-sync" onclick="syncAll()">↻ Đồng bộ</button>
+  <a class="logo" href="#">Edupia <em>KOC Studio</em></a>
+  <div class="hdr-r">
+    <div class="db-chip">
+      <div class="sdot" id="sdot"></div>
+      <span id="stxt">Đang kiểm tra...</span>
+    </div>
   </div>
 </header>
 
 <div class="wrap">
 
-  <!-- ── DNA SECTION ── -->
-  <div class="dna-section">
-    <div class="section-eyebrow">Nguồn dữ liệu học DNA viết</div>
-    <div class="dna-grid">
+  <!-- ── DATABASE SECTION ── -->
+  <div class="db-section">
+    <div class="eyebrow">Bộ nhớ AI — học 1 lần, dùng mãi mãi</div>
+    <div class="db-card">
 
-      <!-- KOC content win -->
-      <div class="dna-card">
-        <div class="dna-card-hd">
-          <div class="dna-card-hd-l">
-            <div class="dna-icon koc">✍️</div>
-            <div>
-              <div class="dna-title">KOC Content Win</div>
-              <div class="dna-sub">Bài viết KOC đã đăng và hiệu quả</div>
-            </div>
-          </div>
-          <span class="dna-count zero" id="kocCount">0 mẫu</span>
+      <!-- Stats -->
+      <div class="db-status-bar">
+        <div class="db-stat">
+          <div class="db-stat-num green" id="statKoc">—</div>
+          <div class="db-stat-label">Mẫu KOC đã học</div>
         </div>
-        <div class="dna-body">
-          <div class="sheet-input-wrap">
-            <input class="sheet-input" id="kocUrl" type="text"
-              placeholder="Link Google Sheet (đã publish ra CSV)..."
-              value="">
-            <button class="sheet-load-btn" onclick="loadKOC()">Tải</button>
+        <div class="db-stat">
+          <div class="db-stat-num amber" id="statViral">—</div>
+          <div class="db-stat-label">Bài Viral đã học</div>
+        </div>
+        <div class="db-stat">
+          <div class="db-stat-num" id="statTotal" style="color:var(--ink3)">—</div>
+          <div class="db-stat-label">Tổng vectors trong DB</div>
+        </div>
+      </div>
+
+      <!-- Sheet URLs -->
+      <div class="db-inputs">
+        <div class="db-input-block">
+          <div class="db-input-label">
+            <div class="db-input-ico ico-koc">✍️</div>
+            KOC Content Win — Google Sheet
           </div>
-          <div id="kocMsg" style="display:none"></div>
-          <div class="dna-preview" id="kocPreview">
-            <div class="dna-empty-msg">Nhập link Google Sheet và nhấn Tải</div>
+          <div class="sheet-row">
+            <input class="sheet-inp" id="kocUrl" type="text" placeholder="https://docs.google.com/spreadsheets/d/...">
+            <button class="save-btn" onclick="saveUrl('koc')">Lưu</button>
+          </div>
+        </div>
+        <div class="db-input-block">
+          <div class="db-input-label">
+            <div class="db-input-ico ico-viral">🔥</div>
+            Facebook Viral — Google Sheet
+          </div>
+          <div class="sheet-row">
+            <input class="sheet-inp" id="viralUrl" type="text" placeholder="https://docs.google.com/spreadsheets/d/...">
+            <button class="save-btn" onclick="saveUrl('viral')">Lưu</button>
           </div>
         </div>
       </div>
 
-      <!-- Viral posts -->
-      <div class="dna-card">
-        <div class="dna-card-hd">
-          <div class="dna-card-hd-l">
-            <div class="dna-icon viral">🔥</div>
-            <div>
-              <div class="dna-title">Facebook Viral</div>
-              <div class="dna-sub">Bài viral chủ đề tiếng Anh cho trẻ</div>
-            </div>
-          </div>
-          <span class="dna-count zero" id="viralCount">0 mẫu</span>
+      <!-- Sync -->
+      <div class="db-footer">
+        <div>
+          <div class="sync-info" id="syncInfo">Nhấn "Đồng bộ & Học" để AI học toàn bộ dữ liệu từ 2 sheet.</div>
+          <div class="sync-info" id="lastSyncTime" style="color:#aaa"></div>
         </div>
-        <div class="dna-body">
-          <div class="sheet-input-wrap">
-            <input class="sheet-input" id="viralUrl" type="text"
-              placeholder="Link Google Sheet (đã publish ra CSV)..."
-              value="">
-            <button class="sheet-load-btn" onclick="loadViral()">Tải</button>
-          </div>
-          <div id="viralMsg" style="display:none"></div>
-          <div class="dna-preview" id="viralPreview">
-            <div class="dna-empty-msg">Nhập link Google Sheet và nhấn Tải</div>
-          </div>
-        </div>
+        <button class="sync-btn" id="syncBtn" onclick="syncAndLearn()">
+          <span id="syncIco">⚡</span>
+          <span id="syncLbl">Đồng bộ &amp; Học</span>
+        </button>
+      </div>
+
+      <div class="sync-progress" id="syncProgress">
+        <span id="syncProgressTxt">Đang xử lý...</span>
+        <div class="prog-bar-wrap"><div class="prog-bar" id="progBar"></div></div>
       </div>
 
     </div>
@@ -520,397 +241,234 @@ body {
   <!-- ── MAIN GRID ── -->
   <div class="main-grid">
 
-    <!-- LEFT: INPUT PANEL -->
-    <div class="input-panel">
-      <div class="ip-hd">
+    <!-- LEFT -->
+    <div class="panel">
+      <div class="ph">
         <h2>Thông tin KOC</h2>
-        <p>Mô tả tự do — AI tự phân tích và viết</p>
+        <p>Mô tả tự do — AI tự phân tích, tìm mẫu phù hợp và viết</p>
       </div>
-      <div class="ip-body">
+      <div class="pb">
+
+        <div class="dna-status empty" id="dnaStatusBox">
+          <span class="dna-status-ico">💾</span>
+          <span id="dnaStatusTxt">Chưa có dữ liệu trong DB — hãy đồng bộ trước</span>
+        </div>
 
         <label class="flbl">Thông tin tóm tắt về KOC và con</label>
-        <textarea class="koc-textarea" id="kocInfo"
-          placeholder="Viết tự do những gì bạn biết về KOC và con của họ...
+        <textarea class="koc-area" id="kocInfo"
+          placeholder="Viết tự do những gì bạn biết về KOC...
 
 Ví dụ:
-- Tên con: Bond, lớp 3, 9 tuổi
+- Tên con: Bond, lớp 3
 - Tiếng Anh tốt, nghe nói tốt nhất lớp
-- Hay làm được bài khó mà các bạn không làm được
+- Hay làm được bài khó mà bạn bè không làm được
 - Mẹ lo con học quá dễ sẽ chán
-- Đã dùng Edupia được 2 tháng
-- Thấy con tự tin hơn, thích học hơn"></textarea>
-
-        <div class="koc-hint">
-          💡 Càng chi tiết càng tốt — AI sẽ tự phân tích để chọn DNA phù hợp và viết content sát thực tế nhất.
-        </div>
+- Đã dùng Edupia 2 tháng, con tự tin hơn"></textarea>
+        <div class="koc-hint">💡 Càng chi tiết → AI tìm được mẫu phù hợp hơn → content sát thực tế hơn</div>
 
         <div class="hr"></div>
 
-        <div style="margin-bottom:12px">
+        <div class="field">
           <label class="flbl">Link đăng ký của KOC</label>
-          <input class="link-input" id="refLink" type="text"
-            placeholder="https://link.educa.vn/hocbongGS_xxx">
-        </div>
-
-        <!-- DNA status -->
-        <div class="dna-status-bar">
-          <span style="font-size:11px;color:var(--ink3)">Đang học từ:</span>
-          <span class="dna-pill none" id="kocPill">KOC: 0 mẫu</span>
-          <span class="dna-pill none" id="viralPill">Viral: 0 mẫu</span>
+          <input class="link-inp" id="refLink" type="text" placeholder="https://link.educa.vn/hocbongGS_xxx">
         </div>
 
         <button class="gen-btn" id="genBtn" onclick="generate()">
-          <div class="spin-el" id="spinner"></div>
+          <div class="spin" id="spinner"></div>
           <span id="genLbl">✦ Tạo 2 phiên bản content</span>
         </button>
 
       </div>
     </div>
 
-    <!-- RIGHT: OUTPUT -->
-    <div class="output-area">
-      <div class="output-hd">
-        <div>
-          <h3>Content Output</h3>
-          <div class="output-hd-sub">2 phiên bản · Facebook post · Học từ DNA thực tế</div>
-        </div>
+    <!-- RIGHT -->
+    <div class="rarea">
+      <div class="out-hd">
+        <h3>Content Output</h3>
+        <div class="out-hd-sub">2 phiên bản · Facebook post · Học từ DNA vector database</div>
       </div>
 
       <div class="err-bar" id="errBar"></div>
 
       <div class="empty-state" id="emptyState">
-        <div class="empty-state-ico">✦</div>
+        <div class="empty-ico">✦</div>
         <h4>Chưa có content</h4>
-        <p>Tải dữ liệu DNA từ 2 Google Sheet,<br>điền thông tin KOC và nhấn tạo.</p>
+        <p>1. Đồng bộ dữ liệu DNA (1 lần duy nhất)<br>2. Điền thông tin KOC → Tạo content</p>
       </div>
 
       <div id="cardsWrap"></div>
-
     </div>
+
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
-// ══════════════════════════════════
-// STATE
-// ══════════════════════════════════
-let kocData   = [];
-let viralData = [];
+// ══ INIT ══
+window.addEventListener('DOMContentLoaded', () => {
+  // Restore saved URLs
+  const ku = localStorage.getItem('kocSheetUrl');
+  const vu = localStorage.getItem('viralSheetUrl');
+  if (ku) document.getElementById('kocUrl').value   = ku;
+  if (vu) document.getElementById('viralUrl').value = vu;
 
-// ══════════════════════════════════
-// STATUS
-// ══════════════════════════════════
-function setSt(state, txt) {
-  document.getElementById('sdot').className = 'sdot ' + state;
-  document.getElementById('stxt').textContent = txt;
+  const ls = localStorage.getItem('lastSync');
+  if (ls) document.getElementById('lastSyncTime').textContent = 'Lần cuối học: ' + ls;
+
+  checkStats();
+});
+
+// ══ SAVE URL ══
+function saveUrl(type) {
+  const id  = type === 'koc' ? 'kocUrl' : 'viralUrl';
+  const key = type === 'koc' ? 'kocSheetUrl' : 'viralSheetUrl';
+  const val = document.getElementById(id).value.trim();
+  if (!val) { toast('Nhập link trước!'); return; }
+  localStorage.setItem(key, val);
+  toast('✓ Đã lưu link ' + (type === 'koc' ? 'KOC' : 'Viral'));
 }
 
-// ══════════════════════════════════
-// PARSE CSV
-// ══════════════════════════════════
-// Parse CSV đúng chuẩn RFC 4180 — xử lý ô có nhiều dòng (multiline cells)
-function parseCSV(text) {
-  const rows = parseCSVFull(text);
-  if (rows.length < 2) return [];
-  const headers = rows[0].map(h => h.toLowerCase().trim());
-  return rows.slice(1)
-    .map(cols => {
-      const obj = {};
-      headers.forEach((h, i) => { obj[h] = (cols[i] || '').trim(); });
-      return obj;
-    })
-    .filter(row => Object.values(row).some(v => v));
-}
-
-function parseCSVFull(text) {
-  // RFC 4180 compliant parser — handles \n inside quoted cells
-  const rows = [];
-  let row = [], cur = '', inQ = false, i = 0;
-  while (i < text.length) {
-    const c  = text[i];
-    const nc = text[i + 1];
-    if (inQ) {
-      if (c === '"' && nc === '"') { cur += '"'; i += 2; continue; } // escaped quote
-      if (c === '"') { inQ = false; i++; continue; }                 // end quote
-      cur += c; i++; // any char inside quotes (including \n, \r)
+// ══ CHECK STATS ══
+async function checkStats() {
+  setSt('loading', 'Đang kiểm tra DB...');
+  try {
+    const res  = await fetch('/api/stats');
+    const json = await res.json();
+    updateStats(json);
+    if (json.ready) {
+      setSt('ok', `DB: ${json.koc} KOC + ${json.viral} Viral`);
+      setDNAReady(json.koc, json.viral);
     } else {
-      if (c === '"') { inQ = true; i++; continue; }                  // start quote
-      if (c === ',') { row.push(cur); cur = ''; i++; continue; }     // col sep
-      if (c === '\r' && nc === '\n') { row.push(cur); rows.push(row); row = []; cur = ''; i += 2; continue; }
-      if (c === '\n' || c === '\r')  { row.push(cur); rows.push(row); row = []; cur = ''; i++; continue; }
-      cur += c; i++;
+      setSt('', 'DB chưa có dữ liệu');
+      setDNAEmpty();
     }
+  } catch(e) {
+    setSt('err', 'Không kết nối được DB');
   }
-  if (cur || row.length) { row.push(cur); rows.push(row); }
-  return rows.filter(r => r.some(c => c.trim())); // drop empty rows
 }
 
-// ══════════════════════════════════
-// LOAD SHEETS (CSV publish)
-// ══════════════════════════════════
-function toCSVUrl(raw) {
-  // Nếu là Google Sheet URL thường, chuyển sang CSV publish URL
-  const m = raw.match(/\/spreadsheets\/d\/([a-zA-Z0-9_-]+)/);
-  if (!m) return raw; // assume already CSV url or custom
-  const id  = m[1];
-  const gid = (raw.match(/[?&]gid=(\d+)/) || [])[1] || '0';
-  return `https://docs.google.com/spreadsheets/d/${id}/export?format=csv&gid=${gid}`;
+function updateStats(json) {
+  document.getElementById('statKoc').textContent   = json.koc   || 0;
+  document.getElementById('statViral').textContent = json.viral || 0;
+  document.getElementById('statTotal').textContent = json.total || 0;
 }
 
-async function loadSheet(type) {
-  const inputId = type === 'koc' ? 'kocUrl' : 'viralUrl';
-  const msgId   = type === 'koc' ? 'kocMsg' : 'viralMsg';
-  const raw     = document.getElementById(inputId).value.trim();
-  const btn     = document.querySelector('#' + inputId).parentElement.querySelector('.sheet-load-btn');
+function setDNAReady(koc, viral) {
+  const box = document.getElementById('dnaStatusBox');
+  box.className = 'dna-status ready';
+  document.getElementById('dnaStatusTxt').textContent = `✓ DB sẵn sàng — ${koc} mẫu KOC + ${viral} bài viral đã học`;
+}
 
-  if (!raw) { showSheetMsg(msgId, 'warn', 'Vui lòng nhập link Google Sheet trước!'); return; }
+function setDNAEmpty() {
+  const box = document.getElementById('dnaStatusBox');
+  box.className = 'dna-status empty';
+  document.getElementById('dnaStatusTxt').textContent = 'Chưa có dữ liệu trong DB — hãy nhấn "Đồng bộ & Học"';
+}
+
+// ══ SYNC & LEARN ══
+async function syncAndLearn() {
+  const kocUrl   = localStorage.getItem('kocSheetUrl')   || document.getElementById('kocUrl').value.trim();
+  const viralUrl = localStorage.getItem('viralSheetUrl') || document.getElementById('viralUrl').value.trim();
+
+  if (!kocUrl && !viralUrl) {
+    toast('⚠ Nhập ít nhất 1 link Google Sheet trước!'); return;
+  }
+
+  const btn = document.getElementById('syncBtn');
+  const lbl = document.getElementById('syncLbl');
+  const ico = document.getElementById('syncIco');
+  const prog = document.getElementById('syncProgress');
+  const bar  = document.getElementById('progBar');
+  const txt  = document.getElementById('syncProgressTxt');
 
   btn.disabled = true;
-  btn.innerHTML = '<span style="display:inline-block;width:11px;height:11px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:rot .6s linear infinite;vertical-align:middle"></span>';
-  showSheetMsg(msgId, 'loading', 'Đang kết nối Google Sheet...');
+  ico.innerHTML = '<span style="display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:rot .6s linear infinite;vertical-align:middle"></span>';
+  lbl.textContent = 'Đang học...';
+  prog.classList.add('show');
+  setSt('loading', 'Đang đồng bộ & học...');
+
+  // Simulate progress
+  let p = 0;
+  const interval = setInterval(() => {
+    p = Math.min(p + 3, 90);
+    bar.style.width = p + '%';
+    if (p < 30)       txt.textContent = 'Đang đọc Google Sheets...';
+    else if (p < 60)  txt.textContent = 'Đang tạo embeddings (vectors)...';
+    else if (p < 85)  txt.textContent = 'Đang lưu vào Pinecone DB...';
+  }, 400);
 
   try {
-    const csvUrl = toCSVUrl(raw);
-    const res    = await fetch(csvUrl);
-    if (!res.ok) throw new Error('Không tải được sheet (HTTP ' + res.status + '). Kiểm tra lại link.');
-    const text = await res.text();
-    if (text.trim().startsWith('<!')) {
-      throw new Error('Sheet đang bị giới hạn quyền. Vào Google Sheet → Share → đổi thành "Anyone with the link can view".');
-    }
-    const data = parseCSV(text);
-    if (data.length === 0) throw new Error('Sheet chưa có dữ liệu hoặc header không đúng.');
+    const res  = await fetch('/api/sync', { method: 'POST' });
+    const json = await res.json();
+    clearInterval(interval);
 
-    if (type === 'koc') { kocData = data; localStorage.setItem('kocUrl', raw); renderDNA('koc', kocData); }
-    else { viralData = data; localStorage.setItem('viralUrl', raw); renderDNA('viral', viralData); }
+    if (!res.ok || json.error) throw new Error(json.error || 'Sync thất bại');
 
-    updatePills();
-    showSheetMsg(msgId, 'ok', '✓ Đã tải ' + data.length + ' mẫu thành công!');
-    toast('✓ ' + (type === 'koc' ? 'KOC Content Win' : 'Facebook Viral') + ': ' + data.length + ' mẫu');
+    bar.style.width = '100%';
+    txt.textContent = '✓ ' + json.message;
+    txt.style.color = '#1B7A5A';
+
+    const now = new Date().toLocaleString('vi-VN');
+    localStorage.setItem('lastSync', now);
+    document.getElementById('lastSyncTime').textContent = 'Lần cuối học: ' + now;
+    document.getElementById('syncInfo').textContent = json.message;
+
+    await checkStats();
+    toast('✓ AI đã học xong ' + json.message);
+
+    setTimeout(() => { prog.classList.remove('show'); bar.style.width = '0'; txt.style.color = ''; }, 3000);
+
   } catch(e) {
-    showSheetMsg(msgId, 'error', '✗ ' + e.message);
+    clearInterval(interval);
+    bar.style.width = '0';
+    txt.textContent = '✗ Lỗi: ' + e.message;
+    txt.style.color = '#DC2626';
+    setSt('err', 'Lỗi đồng bộ');
+    toast('Lỗi: ' + e.message);
   }
-  btn.disabled = false; btn.innerHTML = 'Tải';
+
+  btn.disabled = false;
+  ico.textContent = '⚡';
+  lbl.textContent = 'Đồng bộ & Học lại';
 }
 
-function showSheetMsg(id, type, text) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  const colors = {
-    loading: { bg:'#FEF3E2', color:'#92400E', border:'#FDE68A' },
-    ok:      { bg:'#E8F5EE', color:'#1B7A5A', border:'#A7D7B8' },
-    warn:    { bg:'#FEF3E2', color:'#92400E', border:'#FDE68A' },
-    error:   { bg:'#FEF2F2', color:'#DC2626', border:'#FECACA' },
-  };
-  const c = colors[type] || colors.warn;
-  el.style.cssText = 'display:block;padding:8px 11px;border-radius:6px;font-size:12px;line-height:1.6;margin-top:8px;background:' + c.bg + ';color:' + c.color + ';border:1px solid ' + c.border;
-  el.textContent = text;
-}
-
-async function loadKOC()   { await loadSheet('koc');   }
-async function loadViral() { await loadSheet('viral'); }
-
-async function syncAll() {
-  setSt('loading', 'Đang đồng bộ...');
-  const k = document.getElementById('kocUrl').value.trim();
-  const v = document.getElementById('viralUrl').value.trim();
-  if (k) await loadKOC();
-  if (v) await loadViral();
-  if (!k && !v) {
-    setSt('', 'Chưa có link sheet nào');
-    return;
-  }
-  setSt('ok', `KOC: ${kocData.length} · Viral: ${viralData.length}`);
-}
-
-// ══════════════════════════════════
-// RENDER DNA PREVIEW
-// ══════════════════════════════════
-// ── Mapping cột theo template 4 cột KOC ──
-// Cột A (index 0) = thông tin KOC  → key: col_a hoặc bất kỳ key đầu tiên
-// Cột B (index 1) = trình độ       → key: col_b / trình độ / trinh do / level
-// Cột C (index 2) = lớp học        → key: col_c / lớp / lop / grade
-// Cột D (index 3) = content        → key: col_d / content / nội dung
-
-function getKOCCols(row) {
-  const keys = Object.keys(row);
-  // Match exact template column names first, then fallback to fuzzy, then positional
-  const findKey = (...names) => keys.find(k => names.some(n => k === n)) 
-    || keys.find(k => names.some(n => k.includes(n))) 
-    || null;
-  return {
-    // Cột A: thong_tin_koc
-    info: row['thong_tin_koc']
-      || row[findKey('thông tin koc','thong tin koc','thong_tin_koc','koc info','thông tin','thong tin','info')]
-      || row[keys[0]] || '',
-    // Cột B: trinh_do_tieng_anh  
-    level: row['trinh_do_tieng_anh']
-      || row[findKey('trinh_do_tieng_anh','trình độ tiếng anh','trinh do tieng anh','trình độ','trinh do','level')]
-      || row[keys[1]] || '',
-    // Cột C: lop_hoc
-    grade: row['lop_hoc']
-      || row[findKey('lop_hoc','lớp học','lop hoc','lớp','lop','grade','class')]
-      || row[keys[2]] || '',
-    // Cột D: content_hieu_qua
-    content: row['content_hieu_qua']
-      || row[findKey('content_hieu_qua','content hiệu quả','content hieu qua','content đã dùng','nội dung','content','bài','bai')]
-      || row[keys[3]] || row[keys[0]] || '',
-  };
-}
-
-function renderDNA(type, data) {
-  const preview = document.getElementById(type + 'Preview');
-  const countEl = document.getElementById(type + 'Count');
-
-  countEl.textContent = data.length + ' mẫu';
-  countEl.className   = 'dna-count ' + (data.length > 0 ? type : 'zero');
-
-  if (type === 'koc') {
-    // Show 4-col preview for KOC sheet
-    preview.innerHTML = data.slice(0, 6).map((row, i) => {
-      const c = getKOCCols(row);
-      const lvlColor = c.level.toUpperCase().includes('GI') ? '#1B7A5A' : '#C77C2D';
-      const snippet  = c.content.slice(0, 70);
-      return `<div class="dna-row">
-        <span class="dna-row-num">${i+1}</span>
-        <span style="flex-shrink:0;font-size:10px;font-weight:700;color:${lvlColor};width:52px">${c.level||'—'}</span>
-        <span style="flex-shrink:0;font-size:10px;color:var(--ink3);width:42px">${c.grade||'—'}</span>
-        <span class="dna-row-text">${esc(snippet)}${snippet.length >= 70 ? '…' : ''}</span>
-      </div>`;
-    }).join('');
-  } else {
-    // Viral: single content preview
-    const contentKey = Object.keys(data[0] || {}).find(k =>
-      k.includes('content') || k.includes('nội dung') || k.includes('bài') || k.includes('bai')
-    ) || Object.keys(data[0] || {})[0];
-    preview.innerHTML = data.slice(0, 6).map((row, i) => {
-      const snippet = (row[contentKey] || Object.values(row)[0] || '').slice(0, 80);
-      return `<div class="dna-row">
-        <span class="dna-row-num">${i+1}</span>
-        <span class="dna-row-text">${esc(snippet)}${snippet.length >= 80 ? '…' : ''}</span>
-      </div>`;
-    }).join('');
-  }
-}
-
-function updatePills() {
-  const kp = document.getElementById('kocPill');
-  const vp = document.getElementById('viralPill');
-  kp.textContent = 'KOC: ' + kocData.length + ' mẫu';
-  kp.className   = 'dna-pill ' + (kocData.length > 0 ? 'koc' : 'none');
-  vp.textContent = 'Viral: ' + viralData.length + ' mẫu';
-  vp.className   = 'dna-pill ' + (viralData.length > 0 ? 'viral' : 'none');
-  if (kocData.length > 0 || viralData.length > 0) {
-    setSt('ok', `KOC: ${kocData.length} · Viral: ${viralData.length}`);
-  }
-}
-
-// ══════════════════════════════════
-// GENERATE
-// ══════════════════════════════════
+// ══ GENERATE ══
 async function generate() {
   const kocInfo = document.getElementById('kocInfo').value.trim();
   const link    = document.getElementById('refLink').value.trim();
 
   if (!kocInfo) { toast('⚠ Nhập thông tin KOC trước!'); return; }
-  if (!link)    { toast('⚠ Nhập link đăng ký của KOC!'); return; }
+  if (!link)    { toast('⚠ Nhập link đăng ký!'); return; }
 
   const btn = document.getElementById('genBtn');
   const sp  = document.getElementById('spinner');
   const lbl = document.getElementById('genLbl');
-  btn.disabled = true; sp.classList.add('show'); lbl.textContent = 'Đang phân tích DNA...';
+  btn.disabled = true; sp.classList.add('show'); lbl.textContent = 'Đang tìm mẫu & viết...';
   hideErr();
   document.getElementById('emptyState').style.display = 'none';
-
-  // Skeleton
   document.getElementById('cardsWrap').innerHTML = `<div class="skel-wrap">${[1,2].map(() => `
     <div class="skel-card">
       <div class="sk" style="width:35%;height:12px;margin-bottom:14px"></div>
       <div class="sk" style="width:100%;height:9px"></div>
-      <div class="sk" style="width:95%;height:9px"></div>
-      <div class="sk" style="width:88%;height:9px"></div>
-      <div class="sk" style="width:92%;height:9px"></div>
-      <div class="sk" style="width:70%;height:9px;margin-top:6px"></div>
+      <div class="sk" style="width:94%;height:9px"></div>
+      <div class="sk" style="width:87%;height:9px"></div>
+      <div class="sk" style="width:91%;height:9px;margin-top:6px"></div>
     </div>`).join('')}</div>`;
 
-  // Build DNA blocks — đọc đúng 4 cột KOC template
-  const kocUsable = kocData.filter(d => Object.values(d).join(' ').length > 20).slice(0, 8);
-  const viralUsable = viralData.filter(d => Object.values(d).join(' ').length > 30).slice(0, 5);
-
-  const findViralContent = (row) => {
-    const keys = Object.keys(row);
-    const ck = keys.find(k => k.includes('content') || k.includes('nội dung') || k.includes('bài') || k.includes('bai'));
-    return row[ck] || row[keys[0]] || '';
-  };
-
-  let dnaBlock = '';
-  if (kocUsable.length > 0) {
-    dnaBlock += `\n\n═══ DNA #1 — ${kocUsable.length} MẪU KOC THỰC TẾ (hiệu quả cao) ═══\n`;
-    dnaBlock += `Mỗi mẫu có 4 thông tin: [THÔNG TIN KOC] + [TRÌNH ĐỘ] + [LỚP] + [CONTENT ĐÃ DÙNG]\n`;
-    dnaBlock += `Học kỹ: cách mở đầu, cấu trúc cảm xúc, giọng điệu phù hợp lớp/trình độ, chi tiết thật, CTA.\n`;
-    dnaBlock += kocUsable.map((r, i) => {
-      const c = getKOCCols(r);
-      return `\n[KOC-${i+1} | Trình độ: ${c.level||'—'} | ${c.grade||'—'}]\nThông tin KOC: ${c.info}\nContent đã dùng:\n${c.content}`;
-    }).join('\n');
-  }
-  if (viralUsable.length > 0) {
-    dnaBlock += `\n\n═══ DNA #2 — ${viralUsable.length} BÀI FACEBOOK VIRAL (tiếng Anh trẻ em) ═══\n`;
-    dnaBlock += `Học: hook mở đầu viral, cấu trúc câu chuyện thu hút, yếu tố tạo share/comment.\n`;
-    dnaBlock += viralUsable.map((r, i) => `\n[VIRAL-${i+1}]\n${findViralContent(r)}`).join('\n');
-  }
-
-  const prompt = `Bạn là chuyên gia phân tích content và copywriter hàng đầu, chuyên viết Facebook viral cho phụ huynh Việt Nam về học tiếng Anh cho trẻ em.
-${dnaBlock}
-
-═══ THÔNG TIN KOC (do người dùng nhập, tự do) ═══
-${kocInfo}
-
-Link đăng ký: ${link}
-
-═══ NHIỆM VỤ ═══
-Dựa vào toàn bộ DNA bên trên, phân tích và viết 2 phiên bản content Facebook HOÀN TOÀN KHÁC NHAU.
-
-PHÂN TÍCH TRƯỚC KHI VIẾT:
-- Từ DNA KOC: học cách mở đầu gây sốc/tò mò, giọng điệu thật, chi tiết cụ thể
-- Từ DNA Viral: học hook, cấu trúc câu chuyện, yếu tố cảm xúc tạo share
-- Từ thông tin KOC: xác định nỗi đau chính, kết quả nổi bật, angle câu chuyện tốt nhất
-
-QUY TẮC BẮT BUỘC:
-1. Câu MỞ ĐẦU: tạo nghịch lý hoặc bất ngờ cực mạnh — người lướt feed phải dừng lại. KHÔNG bao giờ mở bằng "Con mình..." hay lời chào nhàm.
-2. Chỉ nhắc "Edupia" đúng 1 lần duy nhất. KHÔNG dùng "Edupia Pro".
-3. KHÔNG đề cập lớp học, tuổi cụ thể của con trong bài (dùng để phân tích tâm lý phụ huynh thôi).
-4. Giọng phụ huynh Việt Nam đời thực: "mình", "con mình", "bé", không văn hoa, không lộ liễu quảng cáo.
-5. Chi tiết thật tạo độ tin: câu nói của con, tình huống cụ thể, cảm xúc thật.
-6. CTA cuối: học bổng giảm học phí + miễn phí buổi học thử + app AI luyện nói tại nhà + hội thoại thầy cô người nước ngoài. Link: ${link}
-7. 3-5 hashtag phù hợp.
-8. Lớp học nhóm nhỏ 1-4 học sinh (không phải 1-1).
-
-2 PHIÊN BẢN:
-- Phiên bản 1 "Cảm xúc & Câu chuyện": Hook nghịch lý, kể câu chuyện thật có chi tiết cụ thể, kết quả rõ, CTA. 180-220 từ.
-- Phiên bản 2 "Viral hook & Ngắn gọn": Câu đầu cực sốc/hài hước, kể súc tích, CTA mạnh. 110-140 từ.
-
-Trả về JSON hợp lệ, không markdown, không backtick:
-{"versions":[{"label":"Cảm xúc & Câu chuyện","content":"..."},{"label":"Viral hook & Ngắn gọn","content":"..."}]}`;
-
   try {
-    const res  = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
+    const res  = await fetch('/api/generate', {
+      method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        messages: [{ role: 'user', content: prompt }]
-      })
+      body:    JSON.stringify({ kocInfo, link }),
     });
-    const d    = await res.json();
-    const raw  = d.content.map(b => b.text || '').join('');
-    const json = JSON.parse(raw.replace(/```json|```/g, '').trim());
+    const json = await res.json();
+    if (!res.ok || json.error) throw new Error(json.error || 'Lỗi generate');
 
+    window._vers    = json.versions;
     window._kocInfo = kocInfo;
     window._link    = link;
-    window._vers    = json.versions;
-    renderCards(json.versions);
+    renderCards(json.versions, json.dnaUsed, json.topKocScore);
 
   } catch(e) {
     document.getElementById('cardsWrap').innerHTML = '';
@@ -921,29 +479,33 @@ Trả về JSON hợp lệ, không markdown, không backtick:
   btn.disabled = false; sp.classList.remove('show'); lbl.textContent = '↻ Tạo lại';
 }
 
-// ══════════════════════════════════
-// RENDER CARDS
-// ══════════════════════════════════
-function renderCards(versions) {
-  const badges = ['v1', 'v2'];
+// ══ RENDER ══
+const BADGES = ['cb1','cb2'];
+function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function renderCards(versions, dnaUsed, topScore) {
+  const matchPct = Math.round((topScore || 0) * 100);
+  const badgeClass = matchPct >= 70 ? 'dna-badge' : 'dna-badge low';
+  const badgeTxt = dnaUsed?.koc > 0
+    ? `🧬 Học từ ${dnaUsed.koc} mẫu KOC + ${dnaUsed.viral||0} viral · Độ khớp cao nhất: ${matchPct}%`
+    : '🧬 Viết dựa trên kiến thức chung (chưa có dữ liệu DNA)';
+
   document.getElementById('cardsWrap').innerHTML =
+    `<div class="${badgeClass}">${badgeTxt}</div>` +
     `<div class="result-cards">` +
     versions.map((v, i) => {
       const wc = v.content.split(/\s+/).length;
       return `<div class="ccard">
-        <div class="ccard-hd">
-          <div class="ccard-label">
-            <span class="cv-badge ${badges[i]}">Phiên bản ${i+1}</span>
-            <span class="ccard-style">${v.label}</span>
+        <div class="ctop">
+          <div class="clabel">
+            <div><div class="cname">${v.label}</div><div class="csub">${wc} từ · Facebook post</div></div>
           </div>
-          <span class="ccard-wc">${wc} từ</span>
+          <span class="cbadge ${BADGES[i]}">Phiên bản ${i+1}</span>
         </div>
-        <div class="ccard-body">
-          <div class="fb-post" id="ct${i}">${esc(v.content)}</div>
-        </div>
-        <div class="ccard-foot">
-          <button class="copy-btn" onclick="copyCard(${i}, this)">⎘ Copy</button>
-          <button class="regen-btn" onclick="regenOne(${i})">↻ Viết lại</button>
+        <div class="cbody"><div class="fb-post" id="ct${i}">${esc(v.content)}</div></div>
+        <div class="cfoot">
+          <button class="cpybtn" onclick="copyCard(${i},this)">⎘ Copy</button>
+          <button class="crebtn" onclick="regenOne(${i})">↻ Viết lại</button>
           <span class="ccard-chars">${v.content.length} ký tự</span>
         </div>
       </div>`;
@@ -952,67 +514,39 @@ function renderCards(versions) {
 }
 
 async function copyCard(i, btn) {
-  await navigator.clipboard.writeText(document.getElementById('ct' + i).innerText);
+  await navigator.clipboard.writeText(document.getElementById('ct'+i).innerText);
   const o = btn.innerHTML; btn.innerHTML = '✓ Đã copy!'; btn.classList.add('ok');
   setTimeout(() => { btn.innerHTML = o; btn.classList.remove('ok'); }, 2000);
-  toast('Đã copy phiên bản ' + (i + 1) + '!');
+  toast('Đã copy phiên bản ' + (i+1) + '!');
 }
 
 async function regenOne(idx) {
   const card = document.querySelectorAll('.ccard')[idx];
   const fb   = card.querySelector('.fb-post');
-  fb.innerHTML = '<div class="sk" style="width:100%;height:9px;margin-bottom:6px"></div><div class="sk" style="width:92%;height:9px;margin-bottom:6px"></div><div class="sk" style="width:78%;height:9px"></div>';
-
-  const styles = [
-    'Cảm xúc & Câu chuyện: Hook nghịch lý → câu chuyện thật chi tiết → kết quả → CTA. 180-220 từ.',
-    'Viral hook & Ngắn gọn: Câu đầu cực sốc/hài hước → kể súc tích → CTA mạnh. 110-140 từ.'
-  ];
-
-  const kocUsable   = kocData.filter(d => Object.values(d).join(' ').length > 20).slice(0, 5);
-  const viralUsable = viralData.filter(d => Object.values(d).join(' ').length > 30).slice(0, 3);
-  const findViralContent2 = (row) => {
-    const keys = Object.keys(row);
-    const ck = keys.find(k => k.includes('content') || k.includes('nội dung') || k.includes('bài'));
-    return row[ck] || row[keys[0]] || '';
-  };
-
-  let dna = '';
-  if (kocUsable.length) dna += '\nDNA KOC:\n' + kocUsable.map((r,i) => {
-    const c = getKOCCols(r);
-    return `[${i+1}|${c.level||''}|${c.grade||''}] ${c.content}`;
-  }).join('\n');
-  if (viralUsable.length) dna += '\nDNA Viral:\n' + viralUsable.map((r,i) => `[${i+1}] ${findViralContent2(r)}`).join('\n');
-
-  const p = `Viết LẠI 1 bài Facebook review Edupia.
-Phong cách: ${styles[idx]}
-Thông tin KOC: ${window._kocInfo || ''}
-Link: ${window._link || ''}
-${dna}
-Bài cũ (VIẾT KHÁC HOÀN TOÀN): ${(window._vers[idx]||{}).content||''}
-Quy tắc: Hook mạnh. "Edupia" 1 lần. Không lớp/tuổi. Giọng phụ huynh VN. Lớp nhóm 1-4 hs. CTA: học bổng + thử miễn phí + app AI + thầy cô nước ngoài + link. 3-5 hashtag.
-JSON: {"content":"..."}`;
+  fb.innerHTML = '<div class="sk" style="width:100%;height:9px;margin-bottom:6px"></div><div class="sk" style="width:90%;height:9px"></div>';
 
   try {
-    const res  = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 700, messages: [{ role: 'user', content: p }] })
+    const res  = await fetch('/api/generate', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ kocInfo: window._kocInfo + '\n[Yêu cầu: viết khác hoàn toàn so với bài trước]', link: window._link }),
     });
-    const d    = await res.json();
-    const raw  = d.content.map(b => b.text || '').join('');
-    const json = JSON.parse(raw.replace(/```json|```/g, '').trim());
-    window._vers[idx] = { ...window._vers[idx], content: json.content };
-    fb.innerHTML = esc(json.content); fb.id = 'ct' + idx;
-    card.querySelector('.ccard-wc').textContent    = json.content.split(/\s+/).length + ' từ';
-    card.querySelector('.ccard-chars').textContent = json.content.length + ' ký tự';
-    toast('✓ Đã viết lại phiên bản ' + (idx + 1));
+    const json = await res.json();
+    if (json.error) throw new Error(json.error);
+
+    const newContent = json.versions[idx]?.content || json.versions[0]?.content;
+    window._vers[idx] = { ...window._vers[idx], content: newContent };
+    fb.innerHTML = esc(newContent); fb.id = 'ct'+idx;
+    card.querySelector('.csub').textContent       = newContent.split(/\s+/).length + ' từ · Facebook post';
+    card.querySelector('.ccard-chars').textContent= newContent.length + ' ký tự';
+    toast('✓ Đã viết lại phiên bản ' + (idx+1));
   } catch(e) { fb.textContent = 'Lỗi: ' + e.message; }
 }
 
-// ══════════════════════════════════
-// HELPERS
-// ══════════════════════════════════
-function esc(s) {
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+// ══ HELPERS ══
+function setSt(state, txt) {
+  document.getElementById('sdot').className = 'sdot ' + state;
+  document.getElementById('stxt').textContent = txt;
 }
 function toast(msg) {
   const t = document.getElementById('toast');
@@ -1021,18 +555,6 @@ function toast(msg) {
 }
 function showErr(msg) { const b = document.getElementById('errBar'); b.textContent = msg; b.style.display = 'block'; }
 function hideErr()    { document.getElementById('errBar').style.display = 'none'; }
-
-// ══════════════════════════════════
-// INIT — restore saved URLs
-// ══════════════════════════════════
-window.addEventListener('DOMContentLoaded', () => {
-  const ku = localStorage.getItem('kocUrl');
-  const vu = localStorage.getItem('viralUrl');
-  if (ku) { document.getElementById('kocUrl').value = ku; }
-  if (vu) { document.getElementById('viralUrl').value = vu; }
-  // Auto-load if saved
-  if (ku || vu) syncAll();
-});
 </script>
 </body>
 </html>
