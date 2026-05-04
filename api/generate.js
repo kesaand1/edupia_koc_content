@@ -127,28 +127,41 @@ ${kocInfo}
 Link đăng ký: ${link}
 
 ═══ NHIỆM VỤ ═══
+${mode === 'return' ? `Đây là bài viết cho KOC đã hợp tác LẦN 2+. Angle và cấu trúc phải KHÁC HOÀN TOÀN lần đầu.` : `Đây là bài viết cho KOC hợp tác LẦN ĐẦU.`}
 Dựa vào DNA bên trên, viết 2 phiên bản content Facebook HOÀN TOÀN KHÁC NHAU.
 
 PHÂN TÍCH TRƯỚC KHI VIẾT:
-- Từ DNA KOC: học cách mở đầu, giọng điệu, chi tiết thật phù hợp với chân dung KOC này
-- Từ DNA Viral: học hook, cấu trúc câu chuyện, yếu tố cảm xúc tạo share
-- Từ thông tin KOC: xác định nỗi đau chính, kết quả nổi bật, angle tốt nhất
+- Từ DNA: học cách mở đầu, giọng điệu, chi tiết thật phù hợp với chân dung KOC này
+- Từ thông tin KOC: xác định kết quả nổi bật, angle câu chuyện tốt nhất
 
-QUY TẮC BẮT BUỘC:
-1. Câu MỞ ĐẦU: nghịch lý/bất ngờ cực mạnh — người lướt feed phải dừng lại. KHÔNG mở bằng "Con mình..." hay lời chào nhàm.
-2. Chỉ nhắc "Edupia" đúng 1 lần. KHÔNG dùng "Edupia Pro".
-3. KHÔNG đề cập lớp học, tuổi cụ thể của con trong bài.
-4. Giọng phụ huynh Việt Nam đời thường: "mình", "con mình", "bé", không văn hoa, không quảng cáo lộ liễu.
-5. Chi tiết thật: câu nói của con, tình huống cụ thể, cảm xúc thật.
-6. CTA cuối: học bổng giảm học phí + miễn phí buổi học thử + app AI luyện nói + hội thoại thầy cô người nước ngoài. Link: ${link}
-7. 3-5 hashtag phù hợp.
+${mode === 'return' ? `⚠️ CHẾ ĐỘ LẦN 2+ — QUY TẮC ĐẶC BIỆT:
+- Angle PHẢI là "update / sau X tháng / kết quả tiếp theo" — KHÔNG được viết như lần đầu khám phá
+- Mở đầu bằng việc đề cập đã từng chia sẻ trước đây, nay có kết quả mới để update
+- Tone tin tưởng đã được xây dựng: không cần thuyết phục nhiều, chỉ cần kể kết quả thật
+- Nhấn mạnh kết quả DÀI HẠN, cụ thể, có thể đo được (điểm số, giải thưởng, thay đổi hành vi rõ ràng)
+- Cấu trúc: "Hồi trước mình kể... → Nay update..." hoặc "X tháng rồi kể từ khi... → giờ thì..."
+- Đã tin dùng Edupia rồi nên không cần giải thích nhiều về sản phẩm — tập trung vào kết quả của con` : `QUY TẮC BẮT BUỘC:
+- Câu MỞ ĐẦU: nghịch lý/bất ngờ cực mạnh — người lướt feed phải dừng lại. KHÔNG mở bằng "Con mình..." hay lời chào nhàm.`}
 
-2 PHIÊN BẢN:
+QUY TẮC CHUNG:
+1. Chỉ nhắc "Edupia" đúng 1 lần. KHÔNG dùng "Edupia Pro".
+2. KHÔNG đề cập lớp học, tuổi cụ thể của con trong bài.
+3. Giọng phụ huynh Việt Nam đời thường: "mình", "con mình", "bé", không văn hoa, không quảng cáo lộ liễu.
+4. Chi tiết thật: câu nói của con, tình huống cụ thể, cảm xúc thật.
+5. CTA cuối: học bổng giảm học phí + miễn phí buổi học thử + app AI luyện nói + hội thoại thầy cô người nước ngoài. Link: ${link}
+6. 3-5 hashtag phù hợp.
+
+${mode === 'return' ? `2 PHIÊN BẢN (cả 2 đều theo angle "update lần 2"):
+- "Update kết quả": Mở bằng "hồi trước mình đã chia sẻ..." → kết quả dài hạn cụ thể → CTA nhẹ nhàng vì đã tin tưởng rồi. 180-220 từ.
+- "Ngắn & viral": Mở bằng con số hoặc thành tích cụ thể gây bất ngờ → kể nhanh hành trình → CTA. 110-140 từ.` : `2 PHIÊN BẢN:
 - "Cảm xúc & Câu chuyện": Hook nghịch lý → kể câu chuyện thật chi tiết → kết quả → CTA. 180-220 từ.
-- "Viral hook & Ngắn gọn": Câu đầu cực sốc/hài → kể súc tích → CTA mạnh. 110-140 từ.
+- "Viral hook & Ngắn gọn": Câu đầu cực sốc/hài → kể súc tích → CTA mạnh. 110-140 từ.`}
 
 JSON hợp lệ, không markdown, không backtick:
-{"versions":[{"label":"Cảm xúc & Câu chuyện","content":"..."},{"label":"Viral hook & Ngắn gọn","content":"..."}]}`;
+${mode === 'return' 
+  ? '{"versions":[{"label":"Update kết quả","content":"..."},{"label":"Ngắn & viral","content":"..."}]}'
+  : '{"versions":[{"label":"Cảm xúc & Câu chuyện","content":"..."},{"label":"Viral hook & Ngắn gọn","content":"..."}]}'
+}\`;
 
     const claudeRes = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
