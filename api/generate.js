@@ -118,50 +118,68 @@ Trả về JSON: {"versions":[{"label":"Đã chỉnh theo góp ý","content":"..
     }
 
     // ── 4. Gọi Claude để viết content ──
-    const prompt = `Bạn là chuyên gia copywriter hàng đầu, chuyên viết Facebook viral cho phụ huynh Việt Nam về học tiếng Anh trẻ em với Edupia — lớp nhóm nhỏ 1-4 học sinh, chất lượng cao.
+    // Build prompt dựa trên mode — tránh nested template literal
+    const isReturn = mode === 'return';
+
+    const modeIntro = isReturn
+      ? 'Day la bai viet cho KOC da hop tac LAN 2+. Angle va cau truc phai KHAC HOAN TOAN lan dau.'
+      : 'Day la bai viet cho KOC hop tac LAN DAU TIEN.';
+
+    const modeRules = isReturn
+      ? `CHE DO LAN 2+ — QUY TAC DAC BIET:
+- Angle PHAI la "update / sau X thang / ket qua tiep theo" — KHONG duoc viet nhu lan dau kham pha
+- Mo dau bang viec de cap da tung chia se truoc day, nay co ket qua moi de update
+- Tone tin tuong da duoc xay dung: khong can thuyet phuc nhieu, chi can ke ket qua that
+- Nhan manh ket qua DAI HAN, cu the, co the do duoc (diem so, giai thuong, thay doi hanh vi ro rang)
+- Cau truc: "Hoi truoc minh ke... → Nay update..." hoac "X thang roi ke tu khi... → gio thi..."
+- Da tin dung Edupia roi nen khong can giai thich nhieu ve san pham — tap trung vao ket qua cua con`
+      : `QUY TAC MO DAU:
+- Cau MO DAU: nghich ly/bat ngo cuc manh — nguoi luot feed phai dung lai
+- KHONG mo bang "Con minh..." hay loi chao nham`;
+
+    const modeVersions = isReturn
+      ? `2 PHIEN BAN (ca 2 deu theo angle "update lan 2"):
+- "Update ket qua": Mo bang "hoi truoc minh da chia se..." → ket qua dai han cu the → CTA nhe nhang. 180-220 tu.
+- "Ngan & viral": Mo bang con so hoac thanh tich cu the gay bat ngo → ke nhanh hanh trinh → CTA. 110-140 tu.`
+      : `2 PHIEN BAN:
+- "Cam xuc & Cau chuyen": Hook nghich ly → ke cau chuyen that chi tiet → ket qua → CTA. 180-220 tu.
+- "Viral hook & Ngan gon": Cau dau cuc soc/hai → ke suc tich → CTA manh. 110-140 tu.`;
+
+    const jsonFormat = isReturn
+      ? '{"versions":[{"label":"Update ket qua","content":"..."},{"label":"Ngan & viral","content":"..."}]}'
+      : '{"versions":[{"label":"Cam xuc & Cau chuyen","content":"..."},{"label":"Viral hook & Ngan gon","content":"..."}]}';
+
+    const prompt = `Ban la chuyen gia copywriter hang dau, chuyen viet Facebook viral cho phu huynh Viet Nam ve hoc tieng Anh tre em voi Edupia — lop nhom nho 1-4 hoc sinh, chat luong cao.
 ${dnaBlock}
 
-═══ THÔNG TIN KOC MỚI ═══
+THONG TIN KOC MOI:
 ${kocInfo}
 
-Link đăng ký: ${link}
+Link dang ky: ${link}
 
-═══ NHIỆM VỤ ═══
-${mode === 'return' ? `Đây là bài viết cho KOC đã hợp tác LẦN 2+. Angle và cấu trúc phải KHÁC HOÀN TOÀN lần đầu.` : `Đây là bài viết cho KOC hợp tác LẦN ĐẦU.`}
-Dựa vào DNA bên trên, viết 2 phiên bản content Facebook HOÀN TOÀN KHÁC NHAU.
+NHIEM VU:
+${modeIntro}
+Dua vao DNA ben tren, viet 2 phien ban content Facebook HOAN TOAN KHAC NHAU.
 
-PHÂN TÍCH TRƯỚC KHI VIẾT:
-- Từ DNA: học cách mở đầu, giọng điệu, chi tiết thật phù hợp với chân dung KOC này
-- Từ thông tin KOC: xác định kết quả nổi bật, angle câu chuyện tốt nhất
+PHAN TICH TRUOC KHI VIET:
+- Tu DNA: hoc cach mo dau, giong dieu, chi tiet that phu hop voi chan dung KOC nay
+- Tu thong tin KOC: xac dinh ket qua noi bat, angle cau chuyen tot nhat
 
-${mode === 'return' ? `⚠️ CHẾ ĐỘ LẦN 2+ — QUY TẮC ĐẶC BIỆT:
-- Angle PHẢI là "update / sau X tháng / kết quả tiếp theo" — KHÔNG được viết như lần đầu khám phá
-- Mở đầu bằng việc đề cập đã từng chia sẻ trước đây, nay có kết quả mới để update
-- Tone tin tưởng đã được xây dựng: không cần thuyết phục nhiều, chỉ cần kể kết quả thật
-- Nhấn mạnh kết quả DÀI HẠN, cụ thể, có thể đo được (điểm số, giải thưởng, thay đổi hành vi rõ ràng)
-- Cấu trúc: "Hồi trước mình kể... → Nay update..." hoặc "X tháng rồi kể từ khi... → giờ thì..."
-- Đã tin dùng Edupia rồi nên không cần giải thích nhiều về sản phẩm — tập trung vào kết quả của con` : `QUY TẮC BẮT BUỘC:
-- Câu MỞ ĐẦU: nghịch lý/bất ngờ cực mạnh — người lướt feed phải dừng lại. KHÔNG mở bằng "Con mình..." hay lời chào nhàm.`}
+${modeRules}
 
-QUY TẮC CHUNG:
-1. Chỉ nhắc "Edupia" đúng 1 lần. KHÔNG dùng "Edupia Pro".
-2. KHÔNG đề cập lớp học, tuổi cụ thể của con trong bài.
-3. Giọng phụ huynh Việt Nam đời thường: "mình", "con mình", "bé", không văn hoa, không quảng cáo lộ liễu.
-4. Chi tiết thật: câu nói của con, tình huống cụ thể, cảm xúc thật.
-5. CTA cuối: học bổng giảm học phí + miễn phí buổi học thử + app AI luyện nói + hội thoại thầy cô người nước ngoài. Link: ${link}
-6. 3-5 hashtag phù hợp.
+QUY TAC CHUNG:
+1. Chi nhac "Edupia" dung 1 lan. KHONG dung "Edupia Pro".
+2. KHONG de cap lop hoc, tuoi cu the cua con trong bai.
+3. Giong phu huynh Viet Nam doi thuong: "minh", "con minh", "be", khong van hoa, khong quang cao lo lieu.
+4. Chi tiet that: cau noi cua con, tinh huong cu the, cam xuc that.
+5. CTA cuoi: hoc bong giam hoc phi + mien phi buoi hoc thu + app AI luyen noi + hoi thoai thay co nguoi nuoc ngoai. Link: ${link}
+6. 3-5 hashtag phu hop. Viet bang tieng Viet co dau day du.
+7. QUAN TRONG: Tat ca noi dung phai viet bang TIENG VIET co dau, khong viet tieng Anh phan am.
 
-${mode === 'return' ? `2 PHIÊN BẢN (cả 2 đều theo angle "update lần 2"):
-- "Update kết quả": Mở bằng "hồi trước mình đã chia sẻ..." → kết quả dài hạn cụ thể → CTA nhẹ nhàng vì đã tin tưởng rồi. 180-220 từ.
-- "Ngắn & viral": Mở bằng con số hoặc thành tích cụ thể gây bất ngờ → kể nhanh hành trình → CTA. 110-140 từ.` : `2 PHIÊN BẢN:
-- "Cảm xúc & Câu chuyện": Hook nghịch lý → kể câu chuyện thật chi tiết → kết quả → CTA. 180-220 từ.
-- "Viral hook & Ngắn gọn": Câu đầu cực sốc/hài → kể súc tích → CTA mạnh. 110-140 từ.`}
+${modeVersions}
 
-JSON hợp lệ, không markdown, không backtick:
-${mode === 'return' 
-  ? '{"versions":[{"label":"Update kết quả","content":"..."},{"label":"Ngắn & viral","content":"..."}]}'
-  : '{"versions":[{"label":"Cảm xúc & Câu chuyện","content":"..."},{"label":"Viral hook & Ngắn gọn","content":"..."}]}'
-}\`;
+JSON hop le, khong markdown, khong backtick:
+${jsonFormat}`;
 
     const claudeRes = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
