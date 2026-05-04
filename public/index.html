@@ -275,10 +275,18 @@ body{font-family:'DM Sans',sans-serif;background:#EEECEA;color:var(--ink);min-he
           <div class="sync-info" id="syncInfo">Nhấn "Đồng bộ & Học" để AI học toàn bộ dữ liệu từ 2 sheet.</div>
           <div class="sync-info" id="lastSyncTime" style="color:#aaa"></div>
         </div>
-        <button class="sync-btn" id="syncBtn" onclick="syncAndLearn()">
-          <span id="syncIco">⚡</span>
-          <span id="syncLbl">Đồng bộ &amp; Học</span>
-        </button>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button onclick="resetNamespace()" title="Xóa data cũ rồi sync lại"
+            style="padding:9px 14px;border-radius:var(--rs);border:1px solid var(--rule2);background:var(--white);font-size:12px;font-weight:600;cursor:pointer;color:var(--ink3);font-family:inherit;transition:all .15s"
+            onmouseover="this.style.borderColor='#DC2626';this.style.color='#DC2626'"
+            onmouseout="this.style.borderColor='var(--rule2)';this.style.color='var(--ink3)'">
+            🗑 Reset lần 2+
+          </button>
+          <button class="sync-btn" id="syncBtn" onclick="syncAndLearn()">
+            <span id="syncIco">⚡</span>
+            <span id="syncLbl">Đồng bộ &amp; Học</span>
+          </button>
+        </div>
       </div>
 
       <div class="sync-progress" id="syncProgress">
@@ -393,6 +401,26 @@ window.addEventListener('DOMContentLoaded', () => {
 
   checkStats();
 });
+
+// ══ RESET NAMESPACE ══
+async function resetNamespace() {
+  if (!confirm('Xóa toàn bộ data KOC lần 2+ trong Pinecone và sync lại? Thao tác này không thể hoàn tác.')) return;
+  try {
+    setSt('loading', 'Đang xóa data cũ...');
+    const r = await fetch('/api/reset', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ namespace: 'return' }),
+    });
+    const j = await r.json();
+    if (j.error) throw new Error(j.error);
+    toast('✓ Đã xóa sạch — nhấn Đồng bộ & Học để sync lại');
+    await checkStats();
+  } catch(e) {
+    toast('Lỗi reset: ' + e.message);
+    setSt('err', 'Lỗi reset');
+  }
+}
 
 // ══ MODE TOGGLE ══
 function setMode(mode) {
