@@ -1,16 +1,3 @@
-// api/sync.js — Đọc Google Sheet → Tạo embeddings → Lưu Pinecone
-// Chạy 1 lần khi nhấn "Đồng bộ & Học"
-
-export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Content-Type', 'application/json');
-  if (req.method === 'OPTIONS') return res.status(200).end();
-
-  const ANTHROPIC_KEY  = process.env.ANTHROPIC_API_KEY;
-  const PINECONE_KEY   = process.env.PINECONE_API_KEY;
-  const PINECONE_HOST  = process.env.PINECONE_HOST; // dạng: https://xxx.svc.xxx.pinecone.io
-  const KOC_SHEET_URL  = process.env.KOC_SHEET_URL;
-  const VIRAL_SHEET_URL= process.env.VIRAL_SHEET_URL;
 
   if (!PINECONE_KEY || !PINECONE_HOST) {
     return res.status(500).json({ error: 'Thiếu environment variables: PINECONE_API_KEY, PINECONE_HOST' });
@@ -93,24 +80,24 @@ async function upsertToPinecone(rows, namespace, anthropicKey, pineconeKey, pine
         if (namespace === 'koc') {
           metadata = {
             type:    'koc',
-            info:    (row['thong_tin_koc']      || row[keys[0]] || '').slice(0, 500),
-            level:   row['trinh_do_tieng_anh']  || row[keys[1]] || '',
-            grade:   row['lop_hoc']             || row[keys[2]] || '',
-            content: (row['content_hieu_qua']   || row[keys[3]] || '').slice(0, 800),
+            info:    sanitize((row['thong_tin_koc']      || row[keys[0]] || '').slice(0, 500)),
+            level:   sanitize(row['trinh_do_tieng_anh']  || row[keys[1]] || ''),
+            grade:   sanitize(row['lop_hoc']             || row[keys[2]] || ''),
+            content: sanitize((row['content_hieu_qua']   || row[keys[3]] || '').slice(0, 800)),
           };
         } else if (namespace === 'return') {
           // 2 cột: thong_tin_koc + content_hieu_qua
           metadata = {
             type:    'return',
-            info:    (row['thong_tin_koc']    || row[keys[0]] || '').slice(0, 500),
-            content: (row['content_hieu_qua'] || row[keys[1]] || '').slice(0, 800),
+            info:    sanitize((row['thong_tin_koc']    || row[keys[0]] || '').slice(0, 500)),
+            content: sanitize((row['content_hieu_qua'] || row[keys[1]] || '').slice(0, 800)),
           };
         } else {
           metadata = {
             type:       'viral',
-            content:    (Object.values(row)[0] || '').slice(0, 800),
-            engagement: Object.values(row)[1] || '',
-            source:     Object.values(row)[2] || '',
+            content:    sanitize((Object.values(row)[0] || '').slice(0, 800)),
+            engagement: sanitize(Object.values(row)[1] || ''),
+            source:     sanitize(Object.values(row)[2] || ''),
           };
         }
         return {
@@ -199,6 +186,17 @@ function pseudoEmbedding(text) {
 }
 
 // ── CSV Parser (RFC 4180) ──
+// Sanitize text -- remove emoji and surrogate pairs before Pinecone
+function sanitize(str) {
+  if (!str) return '';
+  return str
+    .replace(/[\uD800-\uDFFF]/g, '')
+    .replace(/[\u{1F000}-\u{1FFFF}]/gu, '')
+    .replace(/[\u{2600}-\u{27BF}]/gu, '')
+    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, '')
+    .trim();
+}
+
 function parseCSV(text) {
   const rows = parseCSVFull(text);
   if (rows.length < 2) return [];
