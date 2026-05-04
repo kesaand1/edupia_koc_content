@@ -90,11 +90,13 @@ Trả về JSON: {"versions":[{"label":"Đã chỉnh theo góp ý","content":"..
     let dnaBlock = '';
 
     if (mode === 'return' && returnMatches.length > 0) {
-      dnaBlock += `\n\n═══ DNA ƯU TIÊN — ${returnMatches.length} MẪU CONTENT KOC LẦN 2+ ═══\n`;
-      dnaBlock += `Đây là content của những KOC đã hợp tác lần 2+. Học kỹ phong cách, cách đề cập kết quả dài hạn, sự tin tưởng đã được xây dựng.\n`;
+      dnaBlock += `\n\n═══ DNA ƯU TIÊN — ${returnMatches.length} MẪU KOC LẦN 2+ ═══\n`;
+      dnaBlock += `Học: angle update, kết quả dài hạn, tone tin tưởng.\n`;
       dnaBlock += returnMatches.map((m, i) => {
         const md = m.metadata;
-        return `\n[LẦN2-${i+1} | Score: ${(m.score*100).toFixed(0)}% | ${md.level||''} | ${md.grade||''}]\nThông tin KOC: ${(md.info||'').slice(0,100)}\nContent:\n${(md.content||'').slice(0,300)}`;
+        const contentLen = i === 0 ? 400 : 150;
+        const infoLen    = i === 0 ? 120 : 60;
+        return `\n[LẦN2-${i+1} | ${(m.score*100).toFixed(0)}%]\n${(md.info||'').slice(0,infoLen)}\n${(md.content||'').slice(0,contentLen)}`;
       }).join('\n');
     }
 
@@ -103,14 +105,16 @@ Trả về JSON: {"versions":[{"label":"Đã chỉnh theo góp ý","content":"..
       dnaBlock += `Học: cách mở đầu, cấu trúc cảm xúc, giọng điệu, chi tiết thật, CTA.\n`;
       dnaBlock += kocMatches.map((m, i) => {
         const md = m.metadata;
-        return `\n[KOC-${i+1} | Score: ${(m.score*100).toFixed(0)}% | ${md.level||'—'} | ${md.grade||'—'}]\nThông tin KOC: ${(md.info||'').slice(0,100)}\nContent:\n${(md.content||'').slice(0,300)}`;
+        // Mẫu đầu tiên (khớp nhất) đưa vào đầy đủ hơn, các mẫu sau chỉ lấy hook
+        const contentLen = i === 0 ? 400 : 150;
+        const infoLen    = i === 0 ? 120 : 60;
+        return `\n[KOC-${i+1} | ${(m.score*100).toFixed(0)}% | ${md.level||''} | ${md.grade||''}]\n${(md.info||'').slice(0,infoLen)}\n${(md.content||'').slice(0,contentLen)}`;
       }).join('\n');
     }
 
     if (viralMatches.length > 0) {
-      dnaBlock += `\n\n═══ DNA VIRAL — ${viralMatches.length} BÀI FACEBOOK PHÙ HỢP ═══\n`;
-      dnaBlock += `Học: hook mở đầu, cấu trúc thu hút, yếu tố tạo share.\n`;
-      dnaBlock += viralMatches.map((m, i) => `\n[VIRAL-${i+1} | Score: ${(m.score*100).toFixed(0)}%]\n${(m.metadata.content||'').slice(0,400)}`).join('\n');
+      dnaBlock += `\n\n═══ DNA VIRAL ═══\n`;
+      dnaBlock += viralMatches.map((m, i) => `\n[VIRAL-${i+1}]\n${(m.metadata.content||'').slice(0,200)}`).join('\n');
     }
 
     if (!dnaBlock) {
