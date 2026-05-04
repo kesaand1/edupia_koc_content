@@ -1,3 +1,16 @@
+// api/sync.js — Đọc Google Sheet → Tạo embeddings → Lưu Pinecone
+// Chạy 1 lần khi nhấn "Đồng bộ & Học"
+
+export default async function handler(req, res) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Content-Type', 'application/json');
+  if (req.method === 'OPTIONS') return res.status(200).end();
+
+  const ANTHROPIC_KEY  = process.env.ANTHROPIC_API_KEY;
+  const PINECONE_KEY   = process.env.PINECONE_API_KEY;
+  const PINECONE_HOST  = process.env.PINECONE_HOST; // dạng: https://xxx.svc.xxx.pinecone.io
+  const KOC_SHEET_URL  = process.env.KOC_SHEET_URL;
+  const VIRAL_SHEET_URL= process.env.VIRAL_SHEET_URL;
 
   if (!PINECONE_KEY || !PINECONE_HOST) {
     return res.status(500).json({ error: 'Thiếu environment variables: PINECONE_API_KEY, PINECONE_HOST' });
