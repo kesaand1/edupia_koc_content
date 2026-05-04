@@ -74,15 +74,15 @@ Trả về JSON: {"versions":[{"label":"Đã chỉnh theo góp ý","content":"..
     if (mode === 'return') {
       // Lần 2+: ưu tiên DNA lần 2, bổ sung thêm DNA lần đầu
       [returnMatches, kocMatches, viralMatches] = await Promise.all([
-        queryPinecone(queryVec, 'return', 5, PINECONE_KEY, PINECONE_HOST),
-        queryPinecone(queryVec, 'koc',    3, PINECONE_KEY, PINECONE_HOST),
-        queryPinecone(queryVec, 'viral',  2, PINECONE_KEY, PINECONE_HOST),
+        queryPinecone(queryVec, 'return', 4, PINECONE_KEY, PINECONE_HOST),
+        queryPinecone(queryVec, 'koc',    2, PINECONE_KEY, PINECONE_HOST),
+        queryPinecone(queryVec, 'viral',  1, PINECONE_KEY, PINECONE_HOST),
       ]);
     } else {
       // Lần đầu: DNA KOC + Viral
       [kocMatches, viralMatches] = await Promise.all([
-        queryPinecone(queryVec, 'koc',   5, PINECONE_KEY, PINECONE_HOST),
-        queryPinecone(queryVec, 'viral', 3, PINECONE_KEY, PINECONE_HOST),
+        queryPinecone(queryVec, 'koc',   4, PINECONE_KEY, PINECONE_HOST),
+        queryPinecone(queryVec, 'viral', 2, PINECONE_KEY, PINECONE_HOST),
       ]);
     }
 
@@ -94,7 +94,7 @@ Trả về JSON: {"versions":[{"label":"Đã chỉnh theo góp ý","content":"..
       dnaBlock += `Đây là content của những KOC đã hợp tác lần 2+. Học kỹ phong cách, cách đề cập kết quả dài hạn, sự tin tưởng đã được xây dựng.\n`;
       dnaBlock += returnMatches.map((m, i) => {
         const md = m.metadata;
-        return `\n[LẦN2-${i+1} | Score: ${(m.score*100).toFixed(0)}% | ${md.level||''} | ${md.grade||''}]\nThông tin KOC: ${(md.info||'').slice(0,150)}\nContent:\n${(md.content||'').slice(0,500)}`;
+        return `\n[LẦN2-${i+1} | Score: ${(m.score*100).toFixed(0)}% | ${md.level||''} | ${md.grade||''}]\nThông tin KOC: ${(md.info||'').slice(0,120)}\nContent:\n${(md.content||'').slice(0,400)}`;
       }).join('\n');
     }
 
@@ -103,7 +103,7 @@ Trả về JSON: {"versions":[{"label":"Đã chỉnh theo góp ý","content":"..
       dnaBlock += `Học: cách mở đầu, cấu trúc cảm xúc, giọng điệu, chi tiết thật, CTA.\n`;
       dnaBlock += kocMatches.map((m, i) => {
         const md = m.metadata;
-        return `\n[KOC-${i+1} | Score: ${(m.score*100).toFixed(0)}% | ${md.level||'—'} | ${md.grade||'—'}]\nThông tin KOC: ${(md.info||'').slice(0,150)}\nContent:\n${(md.content||'').slice(0,500)}`;
+        return `\n[KOC-${i+1} | Score: ${(m.score*100).toFixed(0)}% | ${md.level||'—'} | ${md.grade||'—'}]\nThông tin KOC: ${(md.info||'').slice(0,120)}\nContent:\n${(md.content||'').slice(0,400)}`;
       }).join('\n');
     }
 
@@ -190,7 +190,7 @@ ${jsonFormat}`;
       },
       body: JSON.stringify({
         model:      'claude-sonnet-4-6',
-        max_tokens: 4000,
+        max_tokens: 5000,
         messages:   [{ role: 'user', content: prompt }],
       }),
     });
