@@ -8,13 +8,19 @@ export default async function handler(req, res) {
 
   const ANTHROPIC_KEY  = process.env.ANTHROPIC_API_KEY;
   const PINECONE_KEY   = process.env.PINECONE_API_KEY;
-  const PINECONE_HOST  = process.env.PINECONE_HOST; // dạng: https://xxx.svc.xxx.pinecone.io
-  const KOC_SHEET_URL  = process.env.KOC_SHEET_URL;
-  const VIRAL_SHEET_URL= process.env.VIRAL_SHEET_URL;
+  const PINECONE_HOST  = process.env.PINECONE_HOST;
 
   if (!PINECONE_KEY || !PINECONE_HOST) {
     return res.status(500).json({ error: 'Thiếu environment variables: PINECONE_API_KEY, PINECONE_HOST' });
   }
+
+  // URLs từ request body (ưu tiên) hoặc env vars (fallback)
+  let body = {};
+  try { body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {}); } catch(e) {}
+
+  const KOC_SHEET_URL    = body.kocUrl    || process.env.KOC_SHEET_URL    || '';
+  const VIRAL_SHEET_URL  = body.viralUrl  || process.env.VIRAL_SHEET_URL  || '';
+  const RETURN_SHEET_URL = body.returnUrl || process.env.RETURN_SHEET_URL || '';
 
   try {
     const results = { koc: 0, viral: 0, return: 0, errors: [] };
