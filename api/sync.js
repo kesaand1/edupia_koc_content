@@ -106,10 +106,17 @@ async function upsertToPinecone(rows, namespace, anthropicKey, pineconeKey, pine
           };
         } else if (namespace === 'return') {
           // 2 cột: thong_tin_koc + content_hieu_qua
+          // Đọc theo vị trí cột, không theo tên — linh hoạt với mọi tên header
+          const infoVal = row['thong_tin_koc']
+            || row[keys.find(k => !k.includes('content') && !k.includes('hieu') && !k.includes('hiệu'))]
+            || row[keys[0]] || '';
+          const cntVal  = row['content_hieu_qua']
+            || row[keys.find(k => k.includes('content') || k.includes('hieu') || k.includes('hiệu'))]
+            || row[keys[1]] || '';
           metadata = {
             type:    'return',
-            info:    sanitize((row['thong_tin_koc']    || row[keys[0]] || '').slice(0, 500)),
-            content: sanitize((row['content_hieu_qua'] || row[keys[1]] || '').slice(0, 800)),
+            info:    sanitize(infoVal.slice(0, 500)),
+            content: sanitize(cntVal.slice(0, 800)),
           };
         } else {
           metadata = {
@@ -219,14 +226,23 @@ function sanitize(str) {
 function parseCSV(text) {
   const rows = parseCSVFull(text);
   if (rows.length < 2) return [];
-  const headers = rows[0].map(h => h.toLowerCase().trim());
+  const headers   = rows[0].map(h => h.toLowerCase().trim());
+  const numCols   = headers.length;
   return rows.slice(1)
+    .filter(cols => {
+      // Bỏ hàng không đủ cột hoặc toàn rỗng
+      if (!cols || cols.length === 0) return false;
+      const vals = cols.map(c => (c||'').trim());
+      if (vals.every(v => !v)) return false;
+      // Với sheet 2 cột: phải có ít nhất cột thứ 2 (content) có nội dung dài > 20 ký tự
+      if (numCols === 2 && (!vals[1] || vals[1].length < 20)) return false;
+      return true;
+    })
     .map(cols => {
       const obj = {};
       headers.forEach((h, i) => { obj[h] = (cols[i] || '').trim(); });
       return obj;
-    })
-    .filter(row => Object.values(row).some(v => v));
+    });
 }
 
 function parseCSVFull(text) {
