@@ -94,7 +94,7 @@ Trả về JSON: {"versions":[{"label":"Đã chỉnh theo góp ý","content":"..
       dnaBlock += `Đây là content của những KOC đã hợp tác lần 2+. Học kỹ phong cách, cách đề cập kết quả dài hạn, sự tin tưởng đã được xây dựng.\n`;
       dnaBlock += returnMatches.map((m, i) => {
         const md = m.metadata;
-        return `\n[LẦN2-${i+1} | Score: ${(m.score*100).toFixed(0)}% | ${md.level||''} | ${md.grade||''}]\nThông tin KOC: ${md.info||md.content?.slice(0,200)}\nContent:\n${md.content}`;
+        return `\n[LẦN2-${i+1} | Score: ${(m.score*100).toFixed(0)}% | ${md.level||''} | ${md.grade||''}]\nThông tin KOC: ${(md.info||'').slice(0,150)}\nContent:\n${(md.content||'').slice(0,500)}`;
       }).join('\n');
     }
 
@@ -103,14 +103,14 @@ Trả về JSON: {"versions":[{"label":"Đã chỉnh theo góp ý","content":"..
       dnaBlock += `Học: cách mở đầu, cấu trúc cảm xúc, giọng điệu, chi tiết thật, CTA.\n`;
       dnaBlock += kocMatches.map((m, i) => {
         const md = m.metadata;
-        return `\n[KOC-${i+1} | Score: ${(m.score*100).toFixed(0)}% | ${md.level||'—'} | ${md.grade||'—'}]\nThông tin KOC: ${md.info}\nContent:\n${md.content}`;
+        return `\n[KOC-${i+1} | Score: ${(m.score*100).toFixed(0)}% | ${md.level||'—'} | ${md.grade||'—'}]\nThông tin KOC: ${(md.info||'').slice(0,150)}\nContent:\n${(md.content||'').slice(0,500)}`;
       }).join('\n');
     }
 
     if (viralMatches.length > 0) {
       dnaBlock += `\n\n═══ DNA VIRAL — ${viralMatches.length} BÀI FACEBOOK PHÙ HỢP ═══\n`;
       dnaBlock += `Học: hook mở đầu, cấu trúc thu hút, yếu tố tạo share.\n`;
-      dnaBlock += viralMatches.map((m, i) => `\n[VIRAL-${i+1} | Score: ${(m.score*100).toFixed(0)}%]\n${m.metadata.content}`).join('\n');
+      dnaBlock += viralMatches.map((m, i) => `\n[VIRAL-${i+1} | Score: ${(m.score*100).toFixed(0)}%]\n${(m.metadata.content||'').slice(0,400)}`).join('\n');
     }
 
     if (!dnaBlock) {
@@ -159,7 +159,7 @@ JSON hợp lệ, không markdown, không backtick:
       },
       body: JSON.stringify({
         model:      'claude-sonnet-4-6',
-        max_tokens: 3000,
+        max_tokens: 4000,
         messages:   [{ role: 'user', content: prompt }],
       }),
     });
