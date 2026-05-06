@@ -21,45 +21,47 @@ export default async function handler(req, res) {
   const { kocInfo, link, editRequest } = body;
   if (!kocInfo || !link) return res.status(400).json({ error: 'Thiếu kocInfo hoặc link' });
 
-  // ── Chế độ sửa bài theo góp ý chat ──
+  // Edit mode - chat feedback
   if (editRequest) {
-    const { currentContent, feedback, history } = editRequest;
-    const historyTxt = (history || [])
-      .map(m => (m.role === 'user' ? 'Người dùng: ' : 'AI: ') + m.text)
-      .join('\n');
+    try {
+      const cur  = (editRequest.currentContent || '').slice(0, 800);
+      const fb   = (editRequest.feedback || '').slice(0, 300);
+      const hist = (editRequest.history || [])
+        .filter(m => !m.loading)
+        .map(m => (m.role === 'user' ? 'User: ' : 'AI: ') + (m.text||'').slice(0,150))
+        .slice(-4).join('\n');
 
-    const editPrompt = `Bạn là copywriter chuyên viết Facebook content cho phụ huynh Việt Nam về học tiếng Anh với Edupia.
+      const ep = 'Ban la copywriter Viet Nam chuyen Facebook content ve tieng Anh tre em voi Edupia.\n\n'
+        + 'BAI HIEN TAI:\n' + cur + '\n\n'
+        + 'THONG TIN KOC:\n' + (kocInfo||'').slice(0,200) + '\n\n'
+        + (hist ? 'LICH SU:\n' + hist + '\n\n' : '')
+        + 'GOP Y MOI:\n' + fb + '\n\n'
+        + 'Sua bai theo gop y. Chi nhac Edupia 1 lan. Khong de cap lop/tuoi cu the. Giong phu huynh VN. '
+        + 'Viet tieng Viet co dau. Link dang ky: ' + link + '\n\n'
+        + 'JSON hop le, khong markdown:\n'
+        + '{"versions":[{"label":"Da sua theo gop y","content":"..."},{"label":"Phien ban khac","content":"..."}]}';
 
-BÀI VIẾT HIỆN TẠI:
-${currentContent}
-
-THÔNG TIN KOC:
-${kocInfo}
-
-LỊCH SỬ GÓP Ý:
-${historyTxt || 'Chưa có'}
-
-GÓP Ý MỚI NHẤT CỦA NGƯỜI DÙNG:
-${feedback}
-
-NHIỆM VỤ: Sửa lại bài viết theo đúng góp ý. Giữ nguyên những gì tốt, chỉ thay đổi theo yêu cầu.
-Quy tắc: Chỉ nhắc "Edupia" 1 lần. Không đề cập lớp/tuổi. Giọng phụ huynh VN. Link: ${link}
-
-Trả về JSON: {"versions":[{"label":"Đã chỉnh theo góp ý","content":"..."},{"label":"Phiên bản thay thế","content":"..."}]}`;
-
-    const editRes = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'x-api-key': ANTHROPIC_KEY, 'anthropic-version': '2023-06-01', 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 2000, messages: [{ role: 'user', content: editPrompt }] }),
-    });
-    const editData = await editRes.json();
-    if (!editRes.ok || editData.error) throw new Error(editData.error?.message || 'Claude edit error');
-    const raw = (editData.content || []).map(b => b.text || '').join('');
-    let parsed;
-    try { parsed = JSON.parse(raw.replace(/\`\`\`json|\`\`\`/g, '').trim()); }
-    catch(e) { const m = raw.match(/\{[\s\S]*"versions"[\s\S]*\}/); parsed = m ? JSON.parse(m[0]) : null; }
-    if (!parsed?.versions) throw new Error('Không parse được response');
-    return res.status(200).json({ versions: parsed.versions, dnaUsed: { koc: 0, viral: 0 }, topKocScore: 0 });
+      const er = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'x-api-key': ANTHROPIC_KEY, 'anthropic-version': '2023-06-01', 'Content-Type': 'application/json' },
+        body: JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 5000, messages: [{ role: 'user', content: ep }] }),
+      });
+      if (!er.ok) throw new Error('Claude API ' + er.status + ': ' + (await er.text()).slice(0,150));
+      const ed = await er.json();
+      if (ed.error) throw new Error(ed.error.message);
+      const raw2 = (ed.content||[]).map(b=>b.text||'').join('');
+      if (!raw2) throw new Error('Empty response. Stop: ' + ed.stop_reason);
+      let p2;
+      try { p2 = JSON.parse(raw2.replace(/```json|```/g,'').trim()); }
+      catch(e) {
+        const mx = raw2.match(/\{[\s\S]*"versions"[\s\S]*?\]\s*\}/);
+        if (mx) p2 = JSON.parse(mx[0]); else throw new Error('JSON parse fail: ' + raw2.slice(0,150));
+      }
+      if (!p2?.versions?.length) throw new Error('No versions in response');
+      return res.status(200).json({ versions: p2.versions, dnaUsed: { koc: 0, viral: 0 }, topKocScore: 0 });
+    } catch(editErr) {
+      return res.status(500).json({ error: 'Chat edit error: ' + editErr.message });
+    }
   }
 
   try {
