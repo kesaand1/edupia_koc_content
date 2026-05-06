@@ -52,10 +52,24 @@ export default async function handler(req, res) {
       const raw2 = (ed.content||[]).map(b=>b.text||'').join('');
       if (!raw2) throw new Error('Empty response. Stop: ' + ed.stop_reason);
       let p2;
-      try { p2 = JSON.parse(raw2.replace(/```json|```/g,'').trim()); }
-      catch(e) {
-        const mx = raw2.match(/\{[\s\S]*"versions"[\s\S]*?\]\s*\}/);
-        if (mx) p2 = JSON.parse(mx[0]); else throw new Error('JSON parse fail: ' + raw2.slice(0,150));
+      try {
+        const cleaned2 = raw2.replace(/```json|```/g,'').trim();
+        p2 = JSON.parse(cleaned2);
+      } catch(e) {
+        // Nếu JSON lỗi do dấu " trong content, dùng regex extract từng field
+        try {
+          const labels   = [...raw2.matchAll(/"label"\s*:\s*"([^"]+)"/g)].map(m => m[1]);
+          const contents = [...raw2.matchAll(/"content"\s*:\s*"([\s\S]*?)(?=",\s*"label"|"\s*}\s*]|}$)/g)].map(m => m[1]);
+          if (labels.length >= 1 && contents.length >= 1) {
+            p2 = { versions: labels.map((l, i) => ({ label: l, content: (contents[i]||'').replace(/\\n/g,'\n') })) };
+          } else {
+            // Fallback: lấy text thô và tạo 1 version
+            const textOnly = raw2.replace(/"label"\s*:\s*"[^"]*"\s*,\s*"content"\s*:\s*"/g,'').replace(/["{}[\]]/g,'').trim();
+            p2 = { versions: [{ label: 'Da sua theo gop y', content: textOnly.slice(0, 1000) }] };
+          }
+        } catch(e2) {
+          throw new Error('JSON parse fail: ' + raw2.slice(0,200));
+        }
       }
       if (!p2?.versions?.length) throw new Error('No versions in response');
       return res.status(200).json({ versions: p2.versions, dnaUsed: { koc: 0, viral: 0 }, topKocScore: 0 });
@@ -225,11 +239,17 @@ ${jsonFormat}`;
     try {
       parsed = JSON.parse(raw.replace(/```json|```/g, '').trim());
     } catch(parseErr) {
-      const match = raw.match(/\{[\s\S]*"versions"[\s\S]*\}/);
-      if (match) {
-        try { parsed = JSON.parse(match[0]); } catch(e2) { throw new Error('JSON parse thất bại: ' + raw.slice(0, 300)); }
-      } else {
-        throw new Error('Format JSON sai. Raw response: ' + raw.slice(0, 300));
+      try {
+        // Thử extract bằng regex khi có dấu " trong content làm vỡ JSON
+        const labels   = [...raw.matchAll(/"label"\s*:\s*"([^"]+)"/g)].map(m => m[1]);
+        const contents = [...raw.matchAll(/"content"\s*:\s*"([\s\S]*?)(?=",\s*"label"|"\s*}\s*])/g)].map(m => m[1]);
+        if (labels.length >= 1 && contents.length >= 1) {
+          parsed = { versions: labels.map((l, i) => ({ label: l, content: (contents[i]||'').replace(/\\n/g,'\n') })) };
+        } else {
+          throw new Error('Regex extract failed');
+        }
+      } catch(e2) {
+        throw new Error('JSON parse that bai: ' + raw.slice(0, 300));
       }
     }
 
