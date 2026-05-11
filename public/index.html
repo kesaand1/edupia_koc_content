@@ -630,6 +630,15 @@ function renderCards(versions, dnaUsed, topScore) {
   // Reset chat history on new generation
   chatHistories[0] = []; chatHistories[1] = [];
 
+  // Clean content cho tất cả versions trước khi render
+  versions = versions.map(v => {
+    let c = v.content || '';
+    const leak = c.search(/"\s*},\s*\{"label"|"versions"\s*:/);
+    if (leak > 50) c = c.slice(0, leak).replace(/"\s*$/, '').trim();
+    c = c.replace(/\\n/g, '\n').trim();
+    return { ...v, content: c };
+  });
+
   document.getElementById('cardsWrap').innerHTML =
     `<div class="${badgeClass}">${badgeTxt}</div>` +
     `<div class="result-cards">` +
@@ -753,16 +762,28 @@ async function regenOne(idx) {
     const res  = await fetch('/api/generate', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ kocInfo: window._kocInfo + '\n[Yêu cầu: viết khác hoàn toàn so với bài trước]', link: window._link }),
+      body:    JSON.stringify({
+        kocInfo: (window._kocInfo || '') + '\n[Viet khac hoan toan so voi bai cu]',
+        link:    window._link || '',
+        mode:    currentMode,
+      }),
     });
     const json = await res.json();
     if (json.error) throw new Error(json.error);
 
-    const newContent = json.versions[idx]?.content || json.versions[0]?.content;
+    const ver = json.versions[idx] || json.versions[0];
+    if (!ver) throw new Error('Khong co phien ban trong response');
+
+    // Clean content — xóa JSON thừa nếu bị leak vào content
+    let newContent = ver.content || '';
+    const jsonLeak = newContent.search(/"\s*},\s*\{"|"versions"\s*:/);
+    if (jsonLeak > 50) newContent = newContent.slice(0, jsonLeak).replace(/"\s*$/, '').trim();
+    newContent = newContent.replace(/\\n/g, '\n').trim();
+
     window._vers[idx] = { ...window._vers[idx], content: newContent };
     fb.innerHTML = esc(newContent); fb.id = 'ct'+idx;
-    card.querySelector('.csub').textContent       = newContent.split(/\s+/).length + ' từ · Facebook post';
-    card.querySelector('.ccard-chars').textContent= newContent.length + ' ký tự';
+    card.querySelector('.csub').textContent        = newContent.split(/\s+/).length + ' từ · Facebook post';
+    card.querySelector('.ccard-chars').textContent = newContent.length + ' ký tự';
     toast('✓ Đã viết lại phiên bản ' + (idx+1));
   } catch(e) { fb.textContent = 'Lỗi: ' + e.message; }
 }
