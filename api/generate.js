@@ -165,9 +165,11 @@ export default async function handler(req, res) {
 - "Cam xuc & Cau chuyen": Hook nghich ly → ke cau chuyen that chi tiet → ket qua → CTA. 180-220 tu.
 - "Viral hook & Ngan gon": Cau dau cuc soc/hai → ke suc tich → CTA manh. 110-140 tu.`;
 
-    const jsonFormat = isReturn
-      ? '{"versions":[{"label":"Update ket qua","content":"..."},{"label":"Ngan & viral","content":"..."}]}'
-      : '{"versions":[{"label":"Cam xuc & Cau chuyen","content":"..."},{"label":"Viral hook & Ngan gon","content":"..."}]}';
+    const v1label = isReturn ? 'Update ket qua' : 'Cam xuc & Cau chuyen';
+    const v2label = isReturn ? 'Ngan & viral'    : 'Viral hook & Ngan gon';
+    const jsonFormat = `Tra ve CHINH XAC format sau, khong them gi khac:
+<V1>${v1label}|NỘI DUNG BÀI 1 ĐẦY ĐỦ Ở ĐÂY</V1>
+<V2>${v2label}|NỘI DUNG BÀI 2 ĐẦY ĐỦ Ở ĐÂY</V2>`;
 
     const prompt = `Ban la chuyen gia copywriter hang dau, chuyen viet Facebook viral cho phu huynh Viet Nam ve hoc tieng Anh tre em voi Edupia — lop nhom nho 1-4 hoc sinh, chat luong cao.
 ${dnaBlock}
@@ -198,7 +200,6 @@ QUY TAC CHUNG:
 
 ${modeVersions}
 
-JSON hop le, khong markdown, khong backtick:
 ${jsonFormat}`;
 
     const claudeRes = await fetch('https://api.anthropic.com/v1/messages', {
@@ -234,26 +235,36 @@ ${jsonFormat}`;
       throw new Error('Claude trả về rỗng. Stop reason: ' + claudeData.stop_reason + ' | Usage: ' + JSON.stringify(claudeData.usage));
     }
 
-    // Robust JSON extraction
+    // Parse XML marker format: <V1>label|content</V1> <V2>label|content</V2>
     let parsed;
-    try {
-      parsed = JSON.parse(raw.replace(/```json|```/g, '').trim());
-    } catch(parseErr) {
-      try {
-        // Thử extract bằng regex khi có dấu " trong content làm vỡ JSON
-        const labels   = [...raw.matchAll(/"label"\s*:\s*"([^"]+)"/g)].map(m => m[1]);
-        const contents = [...raw.matchAll(/"content"\s*:\s*"([\s\S]*?)(?=",\s*"label"|"\s*}\s*])/g)].map(m => m[1]);
-        if (labels.length >= 1 && contents.length >= 1) {
-          parsed = { versions: labels.map((l, i) => ({ label: l, content: (contents[i]||'').replace(/\\n/g,'\n') })) };
-        } else {
-          throw new Error('Regex extract failed');
+    const v1m = raw.match(/<V1>([\s\S]*?)<\/V1>/);
+    const v2m = raw.match(/<V2>([\s\S]*?)<\/V2>/);
+
+    if (v1m || v2m) {
+      const parseVBlock = (block, fallbackLabel) => {
+        if (!block) return { label: fallbackLabel, content: '' };
+        const pipeIdx = block.indexOf('|');
+        if (pipeIdx > 0 && pipeIdx < 60) {
+          return { label: block.slice(0, pipeIdx).trim(), content: block.slice(pipeIdx+1).trim() };
         }
-      } catch(e2) {
-        throw new Error('JSON parse that bai: ' + raw.slice(0, 300));
+        return { label: fallbackLabel, content: block.trim() };
+      };
+      parsed = {
+        versions: [
+          parseVBlock(v1m ? v1m[1] : null, isReturn ? 'Update ket qua' : 'Cam xuc & Cau chuyen'),
+          parseVBlock(v2m ? v2m[1] : null, isReturn ? 'Ngan & viral'    : 'Viral hook & Ngan gon'),
+        ]
+      };
+    } else {
+      // Fallback: standard JSON
+      try {
+        parsed = JSON.parse(raw.replace(/```json|```/g, '').trim());
+      } catch(e) {
+        throw new Error('Khong the parse response. Raw: ' + raw.slice(0, 200));
       }
     }
 
-    if (!parsed?.versions?.length) throw new Error('Thiếu versions. Parsed: ' + JSON.stringify(parsed).slice(0, 200));
+    if (!parsed?.versions?.length) throw new Error('Thieu versions trong response');
 
     return res.status(200).json({
       versions:    parsed.versions,
